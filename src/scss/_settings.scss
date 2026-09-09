@@ -1,0 +1,20 @@
+/* ? ======= SETTINGS STYLE PROGECT START======= */
+html {
+  box-sizing: border-box;
+}
+
+body {
+  align-items: center;
+  background-color: var(--color-bg-body);
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+/* ? ======= SETTINGS STYLE PROGECT END======= */

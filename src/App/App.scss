@@ -1,0 +1,16 @@
+.frame {
+  background-color: var(--color-bg-basic);
+  height: 1160px;
+  width: 1600px;
+}
+
+.sitebar {
+  background-color: var(--color-bg-black);
+  height: 100%;
+  width: 65px;
+
+  padding: {
+    bottom: 20px;
+    top: 33px;
+  }
+}

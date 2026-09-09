@@ -1,0 +1,11 @@
+:root {
+  /* font */
+  --font-pop: 'Poppins';
+  --font-rob: 'Roboto';
+  --font-jan: 'JandaHappyDay';
+
+  /* color */
+  --color-bg-basic: #464646;
+  --color-bg-body: #1e2d37;
+  --color-bg-black: #313237;
+}
