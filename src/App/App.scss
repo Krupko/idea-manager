@@ -1,6 +1,11 @@
+@use '../scss/mixins-flex.scss' as *;
+
 .frame {
+  align-items: stretch;
   background-color: var(--color-bg-basic);
+  display: flex;
   height: 1160px;
+  justify-content: flex-start;
   width: 1600px;
 }
 
@@ -13,4 +18,34 @@
     bottom: 20px;
     top: 33px;
   }
+
+  @include flex-col-betw-center;
+}
+
+.list-icon {
+  @include flex-col-betw-center;
+
+  row-gap: 44px;
+}
+
+.sitebar-icon {
+  color: var(--color-white);
+  height: 30px;
+  transition: 0.5s;
+  width: 60px;
+
+  &:hover {
+    color: var(--color-grei);
+  }
+}
+
+.sitebar-button {
+  cursor: pointer;
+
+  @include flex-center;
+}
+
+.test {
+  height: auto;
+  width: 100%;
 }

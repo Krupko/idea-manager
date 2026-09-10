@@ -5,7 +5,9 @@
   --font-jan: 'JandaHappyDay';
 
   /* color */
+  --color-white: #fff;
   --color-bg-basic: #464646;
   --color-bg-body: #1e2d37;
   --color-bg-black: #313237;
+  --color-grei: #718797;
 }
