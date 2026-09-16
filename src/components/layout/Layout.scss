@@ -1,0 +1,27 @@
+.frame {
+  align-items: stretch;
+  background-color: var(--color-bg-basic);
+  display: flex;
+  height: 1160px;
+  justify-content: flex-start;
+  width: 1600px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.header {
+  background-color: var(--color-bg-basic);
+  height: 85px;
+  width: 100%;
+}
+
+.section {
+  background-color: var(--color-bg-basic);
+  height: 100%;
+  width: 100%;
+}

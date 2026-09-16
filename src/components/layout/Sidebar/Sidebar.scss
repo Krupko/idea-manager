@@ -1,0 +1,120 @@
+@use '../../../scss/mixins-flex' as *;
+
+.aside {
+  height: 100%;
+
+  @include flex-start;
+}
+
+.nav-icon {
+  background-color: var(--color-bg-black);
+  height: 100%;
+  width: 65px;
+
+  padding: {
+    bottom: 20px;
+    top: 33px;
+  }
+
+  @include flex-col-betw-center;
+}
+
+.sidebar-button {
+  cursor: pointer;
+  font-family: var(--font-pop);
+
+  @include flex-center;
+
+  svg {
+    color: var(--color-white);
+    height: 30px;
+    transition: 0.5s;
+    width: 60px;
+
+    &:hover {
+      color: var(--color-grei);
+    }
+  }
+}
+
+.list-icon {
+  @include flex-col-betw-center;
+
+  row-gap: 44px;
+}
+
+.list-button {
+  color: var(--color-white);
+  height: 100%;
+  row-gap: 30px;
+  padding: {
+    left: 20px;
+    top: 35px;
+  }
+
+  @include flex-col-start-start;
+
+  button {
+    border-radius: 8px;
+    cursor: pointer;
+    height: 60px;
+    transition: 0.5s;
+    width: 175px;
+  }
+
+  button:not(:last-child) {
+    @include flex-start;
+
+    column-gap: 10px;
+    transition: 0.5s;
+
+    &:hover {
+      color: #2c92f0;
+    }
+
+    & > svg {
+      fill: #ea4335;
+      stroke: #ea4335;
+    }
+  }
+}
+
+.list-button > .add-more {
+  background-color: #666;
+
+  @include flex-col-center;
+
+  span {
+    width: 100%;
+  }
+
+  &:hover {
+    background-color: #a1a1a1;
+    color: var(--color-bg-black);
+  }
+}
+
+.logo {
+  margin-bottom: 65px;
+  font: {
+    size: 25px;
+    weight: 700;
+  }
+}
+
+.button-text {
+  @include flex-col-start-start;
+
+  font-weight: 400;
+  row-gap: 8px;
+}
+
+.button-title {
+  @include flex-start;
+
+  column-gap: 10px;
+  font: {
+    size: 23px;
+    weight: 600;
+  }
+}

@@ -10,6 +10,13 @@
   justify-content: center;
 }
 
+@mixin flex-col-center {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 @mixin flex-start {
   align-items: flex-start;
   display: flex;
@@ -28,4 +35,11 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+@mixin flex-col-start-start {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
