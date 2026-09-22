@@ -1,0 +1,17 @@
+@use '../../../scss/mixins-flex' as *;
+
+.board {
+  height: 100%;
+}
+
+.board-columns {
+  column-gap: 20px;
+  height: 100%;
+
+  padding: {
+    bottom: 30px;
+    right: 60px;
+  }
+
+  @include flex-sb-start;
+}

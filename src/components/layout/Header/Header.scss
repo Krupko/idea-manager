@@ -1,0 +1,79 @@
+@use '../../../scss/mixins-flex' as *;
+
+.header {
+  background-color: var(--color-bg-basis);
+  height: 84px;
+  width: 100%;
+
+  @include flex-sb-center;
+}
+
+.search {
+  border: solid 1px var(--color-bg-black);
+  border-radius: 5px;
+  height: 40px;
+  padding: 5px 15px;
+  width: 420px;
+
+  input {
+    color: #b6c7d4;
+    height: 100%;
+    outline: none;
+    width: 100%;
+  }
+
+  input::placeholder {
+    font: {
+      family: var(--font-rob);
+      size: 14px;
+    }
+
+    color: var(--color-white);
+  }
+}
+
+.header-wrap-icons {
+  column-gap: 40px;
+  padding-right: 30px;
+  width: fit-content;
+
+  @include flex-sb-center;
+}
+
+.header-icons {
+  @include flex-start-center;
+
+  column-gap: 52px;
+
+  button {
+    color: #b6c7d4;
+    cursor: pointer;
+    transition: 0.5s;
+
+    &:hover {
+      color: #445664;
+    }
+  }
+}
+
+.avatar {
+  @include flex-start-center;
+
+  column-gap: 20px;
+  cursor: pointer;
+
+  span {
+    font: {
+      family: var(--font-pop);
+      size: 14px;
+      weight: 400;
+    }
+
+    color: #fdfdff;
+  }
+}
+
+.wrap-avatar {
+  height: 35px;
+  width: 35px;
+}

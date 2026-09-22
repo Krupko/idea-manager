@@ -1,6 +1,8 @@
 import './Layout.scss';
 import { Sidebar } from './Sidebar/Sidebar.tsx';
 import { Header } from './Header/Header';
+import { AddSection } from '../board/AddSection/AddSection.tsx';
+import { Board } from '../board/Board/Board.tsx';
 
 export const Layout = () => {
   return (
@@ -8,7 +10,10 @@ export const Layout = () => {
       <Sidebar />
       <div className='content'>
         <Header />
-        <main className='section'>kljfl;asdkfjalsdfkjlasj</main>
+        <main className='main'>
+          <AddSection />
+          <Board />
+        </main>
       </div>
     </div>
   );

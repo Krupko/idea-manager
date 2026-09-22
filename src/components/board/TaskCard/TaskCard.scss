@@ -1,0 +1,77 @@
+@use '../../../scss/mixins-flex' as *;
+
+.task-card {
+  background-color: var(--color-bg-basic);
+  border-radius: var(--radius5);
+  padding: 20px;
+  transition: 0.5s;
+  width: 100%;
+
+  &:hover {
+    background-color: #3a3a3a;
+  }
+
+  h4 {
+    margin: 15px 0;
+
+    font: {
+      family: var(--font-pop);
+      size: 18px;
+      weight: 500;
+    }
+  }
+
+  &__labels {
+    @include flex-start;
+
+    column-gap: 10px;
+  }
+
+  &-label {
+    border-radius: 2px;
+    height: 5px;
+    width: 30px;
+  }
+
+  &__description {
+    font: {
+      family: var(--font-rob);
+      size: 18px;
+      weight: 400;
+    }
+
+    color: var(--color-white);
+    line-height: 1.6;
+  }
+
+  &__deadline {
+    @include flex-start-center;
+
+    border: 1px solid white;
+    border-radius: var(--radius5);
+    column-gap: 5px;
+    font-size: 16px;
+    padding: 10px;
+
+    &--safe {
+      color: #10b981;
+    }
+
+    &--warning {
+      color: #f59e0b;
+    }
+
+    &--danger {
+      color: #ef4444;
+    }
+
+    &--overdue {
+      color: #ef4444;
+      font-weight: 600;
+    }
+  }
+
+  &__deadline:first-child {
+    margin-top: 10px;
+  }
+}

@@ -1,3 +1,5 @@
+@use '../../scss/mixins-flex' as *;
+
 .frame {
   align-items: stretch;
   background-color: var(--color-bg-basic);
@@ -14,13 +16,9 @@
   width: 100%;
 }
 
-.header {
-  background-color: var(--color-bg-basic);
-  height: 85px;
-  width: 100%;
-}
+.main {
+  @include flex-col;
 
-.section {
   background-color: var(--color-bg-basic);
   height: 100%;
   width: 100%;

@@ -1,7 +1,7 @@
 :root {
   /* font */
-  --font-pop: 'Poppins';
-  --font-rob: 'Roboto';
+  --font-pop: 'Poppins', sans-serif;
+  --font-rob: 'Roboto', sans-serif;
   --font-jan: 'JandaHappyDay';
 
   /* color */
@@ -10,4 +10,8 @@
   --color-bg-body: #1e2d37;
   --color-bg-black: #313237;
   --color-grei: #718797;
+  --color-blue: #2c92f0;
+
+  /* border-radius */
+  --radius5: 5px;
 }

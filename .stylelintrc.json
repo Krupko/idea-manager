@@ -5,7 +5,7 @@
     "order/order": ["custom-properties", "declarations"],
     "order/properties-alphabetical-order": true,
     "color-hex-length": "short",
-    "color-named": "never",
+    "color-named": null,
     "font-family-name-quotes": "always-where-recommended",
     "selector-class-pattern": "^[a-z][a-zA-Z0-9-_]+$",
     "scss/dollar-variable-pattern": "^[a-z][a-zA-Z0-9]+$",

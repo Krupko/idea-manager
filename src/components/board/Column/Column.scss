@@ -1,0 +1,32 @@
+@use '../../../scss/mixins-flex' as *;
+
+.column {
+  background-color: var(--color-bg-black);
+  border: 1px solid #828282;
+  border-radius: var(--radius5);
+  color: var(--color-white);
+  font-family: var(--font-pop);
+  min-height: 100%;
+  padding: 20px;
+  width: 100%;
+
+  @include flex-col-start-start;
+
+  &-header {
+    margin-bottom: 20px;
+    width: 100%;
+
+    @include flex-sb-center;
+  }
+
+  &-button {
+    cursor: pointer;
+  }
+
+  &-tasks {
+    row-gap: 10px;
+    width: 100%;
+
+    @include flex-col-start-start;
+  }
+}
