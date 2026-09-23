@@ -12,6 +12,11 @@
 
   @include flex-col-start-start;
 
+  &--over {
+    background: rgb(59 130 246 / 5%);
+    outline: 2px solid #3b82f6;
+  }
+
   &-header {
     margin-bottom: 20px;
     width: 100%;

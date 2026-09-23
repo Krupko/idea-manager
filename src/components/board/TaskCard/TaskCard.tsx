@@ -2,17 +2,40 @@ import './TaskCard.scss';
 import { Check, Clock } from 'lucide-react';
 import type { Task } from '../types';
 import { getDeadlineStatus, getDeadlineLabel } from '../../../utils/deadline';
+import { useState } from 'react';
 
 interface TaskCardProps {
   task: Task;
+  columnId: string;
+  onDragStart: (tasdId: string, colunmId: string) => void;
+  onDragEnd: () => void;
 }
 
-export const TaskCard = ({ task }: TaskCardProps) => {
+export const TaskCard = ({ task, columnId, onDragStart, onDragEnd }: TaskCardProps) => {
+  const [isDragging, setDragging] = useState(false);
+
   const completedSubtasks = task.subtasks.filter((s) => s.completed).length;
   const totalSubtasks = task.subtasks.length;
   const deadlineStatus = task.deadline ? getDeadlineStatus(task.deadline) : null;
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    setDragging(true);
+    onDragStart(task.id, columnId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    setDragging(false);
+    onDragEnd();
+  };
+
   return (
-    <div className='task-card' draggable='true'>
+    <div
+      className={`task-card ${isDragging ? 'tasl-card--dragging' : ''}`}
+      draggable='true'
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
       {task.labels.length > 0 && (
         <div className='task-card__labels'>
           {task.labels.map((label) => (

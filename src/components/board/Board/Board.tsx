@@ -4,7 +4,7 @@ import { Column } from '../Column/Column.tsx';
 import type { Column as ColumnType } from '../types.ts';
 
 export const Board = () => {
-  const [columns] = useState<ColumnType[]>([
+  const [columns, setColumns] = useState<ColumnType[]>([
     {
       id: 'backlog',
       title: 'Backlog',
@@ -12,7 +12,8 @@ export const Board = () => {
         {
           id: '1',
           title: 'Task 1',
-          description: 'Lorem ipson dolou sit amet',
+          description:
+            'Lorem ipson dolou sit amet Lorem ipson dolou sit amet Lorem ipson dolou sit amet',
           labels: [{ id: 'l1', color: '#ef4444' }],
           deadline: '2026-03-25',
           done: false,
@@ -82,11 +83,63 @@ export const Board = () => {
     },
   ]);
 
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [sourceColumnId, setSourceColumnId] = useState<string | null>(null);
+  const handleDragStart = (taskId: string, columnId: string) => {
+    setDraggedTaskId(taskId);
+    setSourceColumnId(columnId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTaskId(null);
+    setSourceColumnId(null);
+  };
+
+  const handleDrop = (targetColumnId: string) => {
+    if (!draggedTaskId || !sourceColumnId) return;
+
+    if (sourceColumnId === targetColumnId) {
+      setDraggedTaskId(null);
+      setSourceColumnId(null);
+      return;
+    }
+
+    setColumns((prev) => {
+      const sourceColumn = prev.find((c) => c.id === sourceColumnId);
+      const task = sourceColumn?.tasks.find((t) => t.id === draggedTaskId);
+      if (!task) return prev;
+
+      return prev.map((col) => {
+        if (col.id === sourceColumnId) {
+          return {
+            ...col,
+            tasks: col.tasks.filter((t) => t.id !== draggedTaskId),
+          };
+        }
+
+        if (col.id === targetColumnId) {
+          return {
+            ...col,
+            tasks: [...col.tasks, task],
+          };
+        }
+        return col;
+      });
+    });
+    setDraggedTaskId(null);
+    setSourceColumnId(null);
+  };
   return (
     <div className='board'>
       <div className='board-columns'>
         {columns.map((column) => (
-          <Column key={column.id} column={column} />
+          <Column
+            key={column.id}
+            column={column}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDrop={handleDrop}
+          />
         ))}
       </div>
     </div>
