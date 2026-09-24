@@ -1,5 +1,5 @@
 import './Board.scss';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Column } from '../Column/Column.tsx';
 import type { Column as ColumnType } from '../types.ts';
 
@@ -17,7 +17,16 @@ export const Board = () => {
           labels: [{ id: 'l1', color: '#ef4444' }],
           deadline: '2026-03-25',
           done: false,
-          subtasks: [],
+          subtasks: [
+            { id: 's1', title: 'Subtask 1', completed: true },
+            { id: 's2', title: 'Subtask 2', completed: false },
+            { id: 's3', title: 'Subtask 3', completed: true },
+            { id: 's4', title: 'Subtask 4', completed: false },
+            { id: 's5', title: 'Subtask 5', completed: true },
+            { id: 's6', title: 'Subtask 6', completed: false },
+            { id: 's7', title: 'Subtask 7', completed: true },
+            { id: 's8', title: 'Subtask 8', completed: false },
+          ],
         },
         {
           id: '2',
@@ -85,6 +94,30 @@ export const Board = () => {
 
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [sourceColumnId, setSourceColumnId] = useState<string | null>(null);
+  const [justMovedTaskId, setJustMovedTaskId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (draggedTaskId) {
+      document.body.classList.add('dragging');
+    } else {
+      document.body.classList.remove('dragging');
+    }
+    // если компонент размонтируется во время drag
+    return () => {
+      document.body.classList.remove('dragging');
+    };
+  }, [draggedTaskId]);
+
+  useEffect(() => {
+    if (!justMovedTaskId) return;
+
+    const timer = setTimeout(() => {
+      setJustMovedTaskId(null);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [justMovedTaskId]);
+
   const handleDragStart = (taskId: string, columnId: string) => {
     setDraggedTaskId(taskId);
     setSourceColumnId(columnId);
@@ -126,6 +159,7 @@ export const Board = () => {
         return col;
       });
     });
+    setJustMovedTaskId(draggedTaskId);
     setDraggedTaskId(null);
     setSourceColumnId(null);
   };
@@ -161,6 +195,9 @@ export const Board = () => {
         return { ...col, tasks };
       });
     });
+    setJustMovedTaskId(draggedTaskId);
+    setDraggedTaskId(null);
+    setSourceColumnId(null);
   };
 
   return (
@@ -174,6 +211,7 @@ export const Board = () => {
             onDragEnd={handleDragEnd}
             onDrop={handleDrop}
             onTaskDrop={handleTaskDrop}
+            justMovedTaskId={justMovedTaskId}
           />
         ))}
       </div>

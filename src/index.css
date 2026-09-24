@@ -14,3 +14,12 @@
     font-family: var(--font-jan);
   }
 }
+
+body.dragging {
+  cursor: grabbing;
+  user-select: none;
+
+  * {
+    cursor: grabbing;
+  }
+}

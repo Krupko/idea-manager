@@ -7,12 +7,20 @@ import { useState } from 'react';
 interface TaskCardProps {
   task: Task;
   columnId: string;
-  onDragStart: (tasdId: string, colunmId: string) => void;
+  onDragStart: (taskId: string, columnId: string) => void;
   onDragEnd: () => void;
   onTaskDrop: (targetTaskId: string, position: 'before' | 'after') => void;
+  isJustMoved: boolean;
 }
 
-export const TaskCard = ({ task, columnId, onDragStart, onDragEnd, onTaskDrop }: TaskCardProps) => {
+export const TaskCard = ({
+  task,
+  columnId,
+  onDragStart,
+  onDragEnd,
+  onTaskDrop,
+  isJustMoved,
+}: TaskCardProps) => {
   const [isDragging, setDragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
 
@@ -24,6 +32,17 @@ export const TaskCard = ({ task, columnId, onDragStart, onDragEnd, onTaskDrop }:
     setDragging(true);
     onDragStart(task.id, columnId);
     e.dataTransfer.effectAllowed = 'move';
+
+    const ghost = e.currentTarget.cloneNode(true) as HTMLDivElement;
+    ghost.style.position = 'fixed';
+    ghost.style.top = '-1000px';
+    ghost.style.opacity = '0.9';
+    ghost.style.transform = 'rotate(3deg)';
+    ghost.style.height = `${e.currentTarget.offsetHeight}px`;
+    ghost.style.width = `${e.currentTarget.offsetWidth}px`;
+    document.body.appendChild(ghost);
+    e.dataTransfer.setDragImage(ghost, 0, 0);
+    setTimeout(() => document.body.removeChild(ghost), 0);
   };
 
   const handleDragEnd = () => {
@@ -53,7 +72,7 @@ export const TaskCard = ({ task, columnId, onDragStart, onDragEnd, onTaskDrop }:
 
   return (
     <div
-      className={`task-card ${isDragging ? 'tasl-card--dragging' : ''} ${dropPosition ? `task-card--${dropPosition}` : ''}`}
+      className={`task-card ${isDragging ? 'task-card--dragging' : ''} ${dropPosition ? `task-card--${dropPosition}` : ''} ${isJustMoved ? 'task-card--flash' : ''}`}
       draggable='true'
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -66,7 +85,7 @@ export const TaskCard = ({ task, columnId, onDragStart, onDragEnd, onTaskDrop }:
           {task.labels.map((label) => (
             <span
               key={label.id}
-              className='task-card-label'
+              className='task-card__label'
               style={{ backgroundColor: label.color }}
             />
           ))}

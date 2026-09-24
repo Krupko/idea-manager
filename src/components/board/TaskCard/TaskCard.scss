@@ -4,18 +4,26 @@
   background-color: var(--color-bg-basic);
   border-radius: var(--radius5);
   cursor: grab;
-  cursor: drag;
   padding: 20px;
   position: relative;
-  transition: 0.5s;
+  row-gap: 10px;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    background-color 0.5s ease;
   width: 100%;
+
+  @include flex-col;
 
   &--dragging {
     cursor: grabbing;
     opacity: 0.4;
+    transform: scale(0.98);
   }
 
-  &--before::before {
+  &--before::before,
+  &--after::after {
+    animation: slide-in 0.15s ease-out;
     background: #3b82f6;
     border-radius: 2px;
     content: '';
@@ -23,18 +31,14 @@
     left: 0;
     position: absolute;
     right: 0;
+  }
+
+  &--before::before {
     top: -4px;
   }
 
   &--after::after {
-    background: #3b82f6;
-    border-radius: 2px;
     bottom: -4px;
-    content: '';
-    height: 3px;
-    left: 0;
-    position: absolute;
-    right: 0;
   }
 
   &:hover {
@@ -57,7 +61,7 @@
     column-gap: 10px;
   }
 
-  &-label {
+  &__label {
     border-radius: 2px;
     height: 5px;
     width: 30px;
@@ -101,7 +105,36 @@
     }
   }
 
-  &__deadline:first-child {
-    margin-top: 10px;
+  &--flash {
+    animation: flash 0.6s ease-out;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes flash {
+  0% {
+    background: rgb(59 130 246 / 40%);
+    transform: scale(1.03);
+  }
+
+  50% {
+    background: rgb(59 130 246 / 20%);
+    transform: scale(1.01);
+  }
+
+  100% {
+    background: #333;
+    transform: scale(1);
   }
 }
