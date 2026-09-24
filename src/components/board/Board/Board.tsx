@@ -129,6 +129,40 @@ export const Board = () => {
     setDraggedTaskId(null);
     setSourceColumnId(null);
   };
+
+  const handleTaskDrop = (
+    targetColumnId: string,
+    targetTaskId: string,
+    position: 'before' | 'after'
+  ) => {
+    if (!draggedTaskId || !sourceColumnId) return;
+    if (draggedTaskId === targetTaskId) return;
+
+    setColumns((prev) => {
+      const sourceColumn = prev.find((c) => c.id === sourceColumnId);
+      const task = sourceColumn?.tasks.find((t) => t.id === draggedTaskId);
+      if (!task) return prev;
+
+      return prev.map((col) => {
+        let tasks = col.tasks;
+
+        if (col.id === sourceColumnId) {
+          tasks = tasks.filter((t) => t.id !== draggedTaskId);
+        }
+
+        if (col.id === targetColumnId) {
+          const targetIndex = tasks.findIndex((t) => t.id === targetTaskId);
+
+          const insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
+
+          tasks = [...tasks.slice(0, insertIndex), task, ...tasks.slice(insertIndex)];
+        }
+
+        return { ...col, tasks };
+      });
+    });
+  };
+
   return (
     <div className='board'>
       <div className='board-columns'>
@@ -139,6 +173,7 @@ export const Board = () => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDrop={handleDrop}
+            onTaskDrop={handleTaskDrop}
           />
         ))}
       </div>

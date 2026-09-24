@@ -9,10 +9,12 @@ interface TaskCardProps {
   columnId: string;
   onDragStart: (tasdId: string, colunmId: string) => void;
   onDragEnd: () => void;
+  onTaskDrop: (targetTaskId: string, position: 'before' | 'after') => void;
 }
 
-export const TaskCard = ({ task, columnId, onDragStart, onDragEnd }: TaskCardProps) => {
+export const TaskCard = ({ task, columnId, onDragStart, onDragEnd, onTaskDrop }: TaskCardProps) => {
   const [isDragging, setDragging] = useState(false);
+  const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
 
   const completedSubtasks = task.subtasks.filter((s) => s.completed).length;
   const totalSubtasks = task.subtasks.length;
@@ -26,15 +28,38 @@ export const TaskCard = ({ task, columnId, onDragStart, onDragEnd }: TaskCardPro
 
   const handleDragEnd = () => {
     setDragging(false);
+    setDropPosition(null);
     onDragEnd();
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const middleY = rect.top + rect.height / 2;
+    setDropPosition(e.clientY < middleY ? 'before' : 'after');
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (!dropPosition) return;
+
+    onTaskDrop(task.id, dropPosition);
+    setDropPosition(null);
+  };
+
+  const handleDragLeave = () => {
+    setDropPosition(null);
   };
 
   return (
     <div
-      className={`task-card ${isDragging ? 'tasl-card--dragging' : ''}`}
+      className={`task-card ${isDragging ? 'tasl-card--dragging' : ''} ${dropPosition ? `task-card--${dropPosition}` : ''}`}
       draggable='true'
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onDragLeave={handleDragLeave}
     >
       {task.labels.length > 0 && (
         <div className='task-card__labels'>

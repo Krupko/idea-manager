@@ -9,8 +9,9 @@ interface ColumnProps {
   onDragStart: (taskId: string, columnId: string) => void;
   onDragEnd: () => void;
   onDrop: (targetColumnId: string) => void;
+  onTaskDrop: (targetColumnId: string, targetTaskId: string, position: 'before' | 'after') => void;
 }
-export const Column = ({ column, onDragStart, onDragEnd, onDrop }: ColumnProps) => {
+export const Column = ({ column, onDragStart, onDragEnd, onDrop, onTaskDrop }: ColumnProps) => {
   const [isOver, setIsOver] = useState(false);
   const handleDragEnter = () => {
     setIsOver(true);
@@ -53,6 +54,7 @@ export const Column = ({ column, onDragStart, onDragEnd, onDrop }: ColumnProps) 
             columnId={column.id}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
+            onTaskDrop={(targetTaskId, position) => onTaskDrop(column.id, targetTaskId, position)}
           />
         ))}
       </div>

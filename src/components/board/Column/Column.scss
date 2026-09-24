@@ -6,7 +6,8 @@
   border-radius: var(--radius5);
   color: var(--color-white);
   font-family: var(--font-pop);
-  min-height: 100%;
+  height: 100%;
+  overflow-y: auto;
   padding: 20px;
   width: 100%;
 
