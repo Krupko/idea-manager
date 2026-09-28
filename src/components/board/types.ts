@@ -16,6 +16,8 @@ export interface Task {
   labels: Label[];
   deadline?: string;
   done: boolean;
+  paused: boolean;
+  createdAt: string;
   subtasks: Subtask[];
 }
 
