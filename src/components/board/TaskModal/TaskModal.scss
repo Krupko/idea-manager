@@ -1,0 +1,104 @@
+.task-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__title {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    input[type='text'],
+    input[type='date'],
+    textarea {
+      background: #1e1e1e;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      color: #e5e7eb;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      padding: 10px 12px;
+      transition: border-color 0.15s;
+
+      &:focus {
+        border-color: #3b82f6;
+      }
+
+      &::placeholder {
+        color: #6b7280;
+      }
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    &--checkbox {
+      align-items: center;
+      flex-direction: row;
+
+      label {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 8px;
+      }
+    }
+  }
+
+  &__error {
+    color: #ef4444;
+    font-size: 12px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  &__btn {
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    transition: background 0.15s;
+
+    &--cancel {
+      background: transparent;
+      color: #9ca3af;
+
+      &:hover {
+        background: #374151;
+        color: #fff;
+      }
+    }
+
+    &--submit {
+      background: #3b82f6;
+      color: #fff;
+
+      &:hover {
+        background: #2563eb;
+      }
+    }
+  }
+}

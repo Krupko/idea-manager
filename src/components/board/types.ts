@@ -18,6 +18,7 @@ export interface Task {
   done: boolean;
   paused: boolean;
   createdAt: string;
+  updatedAt?: string;
   subtasks: Subtask[];
 }
 

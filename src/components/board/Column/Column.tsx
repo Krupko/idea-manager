@@ -1,6 +1,6 @@
 import './Column.scss';
-import { EllipsisVertical } from 'lucide-react';
-import type { Column as ColumnType } from '../types.ts';
+import { EllipsisVertical, Plus } from 'lucide-react';
+import type { Column as ColumnType, Task } from '../types.ts';
 import { TaskCard } from '../TaskCard/TaskCard.tsx';
 import { useRef, useState } from 'react';
 
@@ -11,6 +11,8 @@ interface ColumnProps {
   onDrop: (targetColumnId: string) => void;
   onTaskDrop: (targetColumnId: string, targetTaskId: string, position: 'before' | 'after') => void;
   justMovedTaskId: string | null;
+  onAddTask: (columnId: string) => void;
+  onEditClick: (task: Task) => void;
 }
 export const Column = ({
   column,
@@ -19,6 +21,8 @@ export const Column = ({
   onDrop,
   onTaskDrop,
   justMovedTaskId,
+  onAddTask,
+  onEditClick,
 }: ColumnProps) => {
   const [isOver, setIsOver] = useState(false);
 
@@ -72,6 +76,7 @@ export const Column = ({
             onDragEnd={onDragEnd}
             onTaskDrop={(targetTaskId, position) => onTaskDrop(column.id, targetTaskId, position)}
             isJustMoved={task.id === justMovedTaskId}
+            onEditClick={onEditClick}
           />
         ))}
         {isEmpty && (
@@ -80,6 +85,11 @@ export const Column = ({
           </div>
         )}
       </div>
+
+      <button className='column-add' type='button' onClick={() => onAddTask(column.id)}>
+        <Plus size={20} />
+        <span>Добавить задачу</span>
+      </button>
     </div>
   );
 };

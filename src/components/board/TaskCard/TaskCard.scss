@@ -108,6 +108,33 @@
   &--flash {
     animation: flash 0.6s ease-out;
   }
+
+  &__edit {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #6b7280; // 7. Серый цвет
+    cursor: pointer;
+    display: flex; // 6. Центрирование иконки
+    height: 30px; // 5. Размер кнопки
+    justify-content: center;
+    opacity: 0; // 8. Скрыта по умолчанию
+    position: absolute; // 1. Абсолютное позиционирование внутри карточки
+    right: 8px; // 3. Отступ справа
+    top: 8px; // 2. Отступ сверху
+    transition: all 0.15s; // 9. Плавное появление
+    width: 30px; // 4. Размер кнопки
+
+    &:hover {
+      background: #374151; // 10. Фон при наведении
+      color: #fff; // 11. Белая иконка при наведении
+    }
+  }
+
+  &:hover &__edit {
+    opacity: 1; // 12. Проявляется при hover на карточку
+  }
 }
 
 @keyframes slide-in {

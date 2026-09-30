@@ -1,9 +1,10 @@
 import './Board.scss';
 import { useEffect, useState } from 'react';
 import { Column } from '../Column/Column.tsx';
-import type { Column as ColumnType } from '../types.ts';
+import type { Column as ColumnType, Task } from '../types.ts';
 import { DEFAULT_COLUMNS } from '../data-local.ts';
 import { loadColumns, saveColumns } from '@/utils/storage.ts';
+import { TaskModal } from '../TaskModal/TaskModal.tsx';
 
 export const Board = () => {
   const [columns, setColumns] = useState<ColumnType[]>(
@@ -13,6 +14,63 @@ export const Board = () => {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [sourceColumnId, setSourceColumnId] = useState<string | null>(null);
   const [justMovedTaskId, setJustMovedTaskId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [targetColumnId, setTargetColumnId] = useState<string | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const handleAddTask = (columnId: string) => {
+    setTargetColumnId(columnId);
+    setEditingTask(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setTargetColumnId(null);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdateTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+    if (!editingTask) return;
+
+    const updatedTask: Task = {
+      ...editingTask,
+      ...taskData,
+      updatedAt: new Date().toISOString(),
+    };
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        tasks: col.tasks.map((t) => (t.id === editingTask.id ? updatedTask : t)),
+      }))
+    );
+    setEditingTask(null);
+  };
+
+  const handleTaskSubmit = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+    if (editingTask) {
+      handleUpdateTask(taskData);
+    } else {
+      handleCreateTask(taskData);
+    }
+  };
+
+  const handleCreateTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+    if (!targetColumnId) return;
+
+    const newTask: Task = {
+      ...taskData,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+
+    setColumns((prev) =>
+      prev.map((col) =>
+        col.id === targetColumnId ? { ...col, tasks: [...col.tasks, newTask] } : col
+      )
+    );
+    setTargetColumnId(null);
+  };
 
   useEffect(() => {
     saveColumns(columns);
@@ -133,10 +191,23 @@ export const Board = () => {
             onDragEnd={handleDragEnd}
             onDrop={handleDrop}
             onTaskDrop={handleTaskDrop}
+            onAddTask={handleAddTask}
+            onEditClick={handleEditTask}
             justMovedTaskId={justMovedTaskId}
           />
         ))}
       </div>
+
+      <TaskModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setTargetColumnId(null);
+          setEditingTask(null);
+        }}
+        onSubmit={handleTaskSubmit}
+        initialTask={editingTask}
+      />
     </div>
   );
 };

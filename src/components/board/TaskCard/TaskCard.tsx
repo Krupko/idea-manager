@@ -1,5 +1,5 @@
 import './TaskCard.scss';
-import { Check, Clock } from 'lucide-react';
+import { Check, Clock, Pencil } from 'lucide-react';
 import type { Task } from '../types';
 import { getDeadlineStatus, getDeadlineLabel } from '../../../utils/deadline';
 import { useState } from 'react';
@@ -11,6 +11,7 @@ interface TaskCardProps {
   onDragEnd: () => void;
   onTaskDrop: (targetTaskId: string, position: 'before' | 'after') => void;
   isJustMoved: boolean;
+  onEditClick: (task: Task) => void;
 }
 
 export const TaskCard = ({
@@ -20,6 +21,7 @@ export const TaskCard = ({
   onDragEnd,
   onTaskDrop,
   isJustMoved,
+  onEditClick,
 }: TaskCardProps) => {
   const [isDragging, setDragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
@@ -70,6 +72,11 @@ export const TaskCard = ({
     setDropPosition(null);
   };
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEditClick(task);
+  };
+
   return (
     <div
       className={`task-card ${isDragging ? 'task-card--dragging' : ''} ${dropPosition ? `task-card--${dropPosition}` : ''} ${isJustMoved ? 'task-card--flash' : ''}`}
@@ -80,6 +87,15 @@ export const TaskCard = ({
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}
     >
+      <button
+        type='button'
+        onClick={handleEditClick}
+        aria-label='Редактировать задачу'
+        className='task-card__edit'
+      >
+        <Pencil size={20} />
+      </button>
+
       {task.labels.length > 0 && (
         <div className='task-card__labels'>
           {task.labels.map((label) => (

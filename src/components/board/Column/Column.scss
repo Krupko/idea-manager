@@ -49,4 +49,26 @@
 
     @include flex-col-start-start;
   }
+
+  &-add {
+    align-items: center;
+    background: transparent;
+    border: 1px dashed #374151;
+    border-radius: 8px;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    font-size: 13px;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 10px 12px;
+    transition: all 0.15s;
+    width: 100%;
+
+    &:hover {
+      background: rgb(255 255 255 / 2%);
+      border-color: #6b7280;
+      color: #9ca3af;
+    }
+  }
 }
