@@ -1,0 +1,65 @@
+@use '../../../scss/mixins-flex' as *;
+
+.confirm-modal {
+  gap: 16px;
+
+  @include flex-col;
+
+  &__title {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__message {
+    color: #9ca3af;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  &__actions {
+    @include flex(flex, flex-end, center);
+
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  &__btn {
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    transition: background 0.15s;
+
+    &--cancel {
+      background: transparent;
+      color: #9ca3af;
+
+      &:hover {
+        background: #374151;
+        color: #fff;
+      }
+    }
+
+    &--confirm {
+      background: #3b82f6;
+      color: #fff;
+
+      &:hover {
+        background: #2563eb;
+      }
+
+      &.danger {
+        background: #ef4444;
+
+        &:hover {
+          background: #dc2626;
+        }
+      }
+    }
+  }
+}

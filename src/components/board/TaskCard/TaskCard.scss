@@ -130,6 +130,15 @@
       background: #374151; // 10. Фон при наведении
       color: #fff; // 11. Белая иконка при наведении
     }
+
+    &--delete {
+      right: 36px;
+
+      &:hover {
+        background: #ef4444;
+        color: #fff;
+      }
+    }
   }
 
   &:hover &__edit {

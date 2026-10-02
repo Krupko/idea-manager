@@ -5,6 +5,7 @@ import type { Column as ColumnType, Task } from '../types.ts';
 import { DEFAULT_COLUMNS } from '../data-local.ts';
 import { loadColumns, saveColumns } from '@/utils/storage.ts';
 import { TaskModal } from '../TaskModal/TaskModal.tsx';
+import { ConfirmModal } from '../ConfirmModal/ConfirmModal.tsx';
 
 export const Board = () => {
   const [columns, setColumns] = useState<ColumnType[]>(
@@ -17,6 +18,7 @@ export const Board = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetColumnId, setTargetColumnId] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
 
   const handleAddTask = (columnId: string) => {
     setTargetColumnId(columnId);
@@ -180,6 +182,24 @@ export const Board = () => {
     setSourceColumnId(null);
   };
 
+  const handleDeleteClick = (task: Task) => {
+    setDeletingTask(task);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deletingTask) return; // 1. Защита: если нет задачи — выходим
+
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        // 2. Фильтруем задачи: убираем удаляемую
+        tasks: col.tasks.filter((t) => t.id !== deletingTask.id),
+      }))
+    );
+
+    setDeletingTask(null); // 3. Сбрасываем
+  };
+
   return (
     <div className='board'>
       <div className='board-columns'>
@@ -193,6 +213,7 @@ export const Board = () => {
             onTaskDrop={handleTaskDrop}
             onAddTask={handleAddTask}
             onEditClick={handleEditTask}
+            onDeleteClick={handleDeleteClick}
             justMovedTaskId={justMovedTaskId}
           />
         ))}
@@ -207,6 +228,17 @@ export const Board = () => {
         }}
         onSubmit={handleTaskSubmit}
         initialTask={editingTask}
+      />
+
+      <ConfirmModal
+        isOpen={deletingTask !== null}
+        onClose={() => setDeletingTask(null)}
+        onConfirm={handleConfirmDelete}
+        title='Удалить задачу?'
+        message={`Вы уверены, что хотите удалить "${deletingTask?.title}"? Это нельзя будет отменить!`}
+        confirmText='Удалить'
+        cancelText='Отмена'
+        variant='danger'
       />
     </div>
   );
