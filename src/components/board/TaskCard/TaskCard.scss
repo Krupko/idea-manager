@@ -109,6 +109,10 @@
     animation: flash 0.6s ease-out;
   }
 
+  &__actions {
+    @include flex-sb-center;
+  }
+
   &__edit {
     align-items: center;
     background: transparent;
@@ -120,29 +124,47 @@
     height: 30px; // 5. Размер кнопки
     justify-content: center;
     opacity: 0; // 8. Скрыта по умолчанию
-    position: absolute; // 1. Абсолютное позиционирование внутри карточки
-    right: 8px; // 3. Отступ справа
-    top: 8px; // 2. Отступ сверху
     transition: all 0.15s; // 9. Плавное появление
     width: 30px; // 4. Размер кнопки
 
     &:hover {
-      background: #374151; // 10. Фон при наведении
+      background: #f59e0b; // 10. Фон при наведении
       color: #fff; // 11. Белая иконка при наведении
     }
 
     &--delete {
-      right: 36px;
-
       &:hover {
         background: #ef4444;
         color: #fff;
       }
     }
+
+    &-wrapper {
+      @include flex-center;
+    }
   }
 
   &:hover &__edit {
     opacity: 1; // 12. Проявляется при hover на карточку
+  }
+
+  &__created-at {
+    color: var(--color-grei); // 4. Серый цвет
+  }
+
+  &--paused {
+    background-color: #3a3a3a; // 1. Темнее, чем обычный
+    opacity: 0.75; // 2. Полупрозрачность
+
+    &:hover {
+      background-color: #444; // 3. При hover — чуть светлее
+      opacity: 0.85;
+    }
+  }
+
+  &__edit--pause:hover {
+    background: #10b981; // 4. Оранжевый цвет иконки Play
+    color: #fff;
   }
 }
 

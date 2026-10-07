@@ -7,9 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Название обязательно').max(100, 'Максимально 100 знаков'),
+  title: z.string().min(1, 'Название обязательно').max(100, 'Меньше 1000 символов'),
   description: z.string().max(500, 'Максимально 500 знаков').optional(),
-  deadline: z.string().optional(),
+  deadline: z.string().min(1, 'Дедлайн обязательно'),
   paused: z.boolean(),
 });
 
@@ -53,7 +53,7 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
     const taskData: Omit<Task, 'id' | 'createdAt'> = {
       title: data.title,
       description: data.description,
-      deadline: data.deadline || undefined,
+      deadline: data.deadline,
       labels: [], // TODO Почему пустой: пока не реализовано, но тип требует
       subtasks: [], // TODO добавить редактор подзадач
       done: initialTask?.done ?? false,
@@ -101,8 +101,9 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
 
         {/* Поле:  Дедлайн*/}
         <div className='task-modal__field'>
-          <label htmlFor='deadline'>Дедлайн</label>
+          <label htmlFor='deadline'>Дедлайн*</label>
           <input id='deadline' type='date' {...register('deadline')} />
+          {errors.deadline && <span className='task-modal__error'>{errors.deadline.message}</span>}
         </div>
 
         {/* Поле: Пауза */}

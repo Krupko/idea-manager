@@ -1,8 +1,9 @@
 import './TaskCard.scss';
-import { Check, Clock, Pencil, Trash2 } from 'lucide-react';
+import { Check, Clock, Pause, Pencil, Play, Trash2 } from 'lucide-react';
 import type { Task } from '../types';
 import { getDeadlineStatus, getDeadlineLabel } from '../../../utils/deadline';
 import { useState } from 'react';
+import { formatCreatedAt } from '@/utils/date';
 
 interface TaskCardProps {
   task: Task;
@@ -13,6 +14,7 @@ interface TaskCardProps {
   isJustMoved: boolean;
   onEditClick: (task: Task) => void;
   onDeleteClick: (task: Task) => void;
+  onTogglePause: (taskId: string) => void;
 }
 
 export const TaskCard = ({
@@ -24,6 +26,7 @@ export const TaskCard = ({
   isJustMoved,
   onEditClick,
   onDeleteClick,
+  onTogglePause,
 }: TaskCardProps) => {
   const [isDragging, setDragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
@@ -84,9 +87,14 @@ export const TaskCard = ({
     onDeleteClick(task);
   };
 
+  const handlePauseClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onTogglePause(task.id);
+  };
+
   return (
     <div
-      className={`task-card ${isDragging ? 'task-card--dragging' : ''} ${dropPosition ? `task-card--${dropPosition}` : ''} ${isJustMoved ? 'task-card--flash' : ''}`}
+      className={`task-card ${isDragging ? 'task-card--dragging' : ''} ${dropPosition ? `task-card--${dropPosition}` : ''} ${isJustMoved ? 'task-card--flash' : ''} ${task.paused ? 'task-card--paused' : ''}`}
       draggable='true'
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -95,23 +103,36 @@ export const TaskCard = ({
       onDragLeave={handleDragLeave}
     >
       <div className='task-card__actions'>
-        <button
-          type='button'
-          onClick={handleEditClick}
-          aria-label='Редактировать задачу'
-          className='task-card__edit'
-        >
-          <Pencil size={20} />
-        </button>
+        <span className='task-card__created-at'>{formatCreatedAt(task.createdAt)}</span>
 
-        <button
-          className='task-card__edit task-card__edit--delete'
-          type='button'
-          onClick={handleDeleteClick}
-          aria-label='Удалить задачу'
-        >
-          <Trash2 size={20} />
-        </button>
+        <div className='task-card__edit-wrapper'>
+          <button
+            type='button'
+            onClick={handlePauseClick}
+            aria-label={task.paused ? 'Возобновить задачу' : 'Приостановить задачу'}
+            className={`task-card__edit task-card__edit--pause ${task.paused ? 'task-card__edit--paused-active' : ''}`}
+          >
+            {task.paused ? <Play size={20} /> : <Pause size={20} />}
+          </button>
+
+          <button
+            type='button'
+            onClick={handleEditClick}
+            aria-label='Редактировать задачу'
+            className='task-card__edit'
+          >
+            <Pencil size={20} />
+          </button>
+
+          <button
+            className='task-card__edit task-card__edit--delete'
+            type='button'
+            onClick={handleDeleteClick}
+            aria-label='Удалить задачу'
+          >
+            <Trash2 size={20} />
+          </button>
+        </div>
       </div>
 
       {task.labels.length > 0 && (

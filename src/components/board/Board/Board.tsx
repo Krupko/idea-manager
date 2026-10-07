@@ -200,6 +200,15 @@ export const Board = () => {
     setDeletingTask(null); // 3. Сбрасываем
   };
 
+  const handleTogglePause = (taskId: string) => {
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        tasks: col.tasks.map((t) => (t.id === taskId ? { ...t, paused: !t.paused } : t)),
+      }))
+    );
+  };
+
   return (
     <div className='board'>
       <div className='board-columns'>
@@ -215,6 +224,7 @@ export const Board = () => {
             onEditClick={handleEditTask}
             onDeleteClick={handleDeleteClick}
             justMovedTaskId={justMovedTaskId}
+            onTogglePause={handleTogglePause}
           />
         ))}
       </div>

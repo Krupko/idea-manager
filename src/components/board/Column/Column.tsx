@@ -14,6 +14,7 @@ interface ColumnProps {
   onAddTask: (columnId: string) => void;
   onEditClick: (task: Task) => void;
   onDeleteClick: (task: Task) => void;
+  onTogglePause: (taskId: string) => void;
 }
 export const Column = ({
   column,
@@ -25,6 +26,7 @@ export const Column = ({
   onAddTask,
   onEditClick,
   onDeleteClick,
+  onTogglePause,
 }: ColumnProps) => {
   const [isOver, setIsOver] = useState(false);
 
@@ -80,6 +82,7 @@ export const Column = ({
             isJustMoved={task.id === justMovedTaskId}
             onEditClick={onEditClick}
             onDeleteClick={onDeleteClick}
+            onTogglePause={onTogglePause}
           />
         ))}
         {isEmpty && (
