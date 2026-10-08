@@ -230,6 +230,7 @@ export const Board = () => {
       </div>
 
       <TaskModal
+        key={editingTask?.id ?? 'new'}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);

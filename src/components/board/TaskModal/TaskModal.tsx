@@ -2,9 +2,11 @@ import { Modal } from '@/components/ui/Modal/Modal';
 import './TaskModal.scss';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
-import type { Task } from '../types';
+import type { Label, Subtask, Task } from '../types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { LabelsPicker } from '../LabelsPicker/LabelsPicker';
+import { SubtasksEditor } from '../SubtasksEditor/SubtasksEditor';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Название обязательно').max(100, 'Меньше 1000 символов'),
@@ -38,6 +40,9 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
     },
   });
 
+  const [labels, setLabels] = useState<Label[]>(initialTask?.labels ?? []);
+  const [subtasks, setSubtasks] = useState<Subtask[]>(initialTask?.subtasks ?? []);
+
   useEffect(() => {
     if (isOpen) {
       reset({
@@ -46,6 +51,8 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
         deadline: initialTask?.deadline ?? '',
         paused: initialTask?.paused ?? false,
       });
+      // setLabels(initialTask?.labels ?? []);
+      // setSubtasks(initialTask?.subtasks ?? []);
     }
   }, [initialTask, isOpen, reset]);
 
@@ -54,14 +61,17 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
       title: data.title,
       description: data.description,
       deadline: data.deadline,
-      labels: [], // TODO Почему пустой: пока не реализовано, но тип требует
-      subtasks: [], // TODO добавить редактор подзадач
+      labels,
+      subtasks,
+      // subtasks: [], // TODO добавить редактор подзадач
       done: initialTask?.done ?? false,
       paused: data.paused,
     };
 
     onSubmit(taskData);
     reset();
+    setLabels([]); // сброс
+    setSubtasks([]);
     onClose();
   };
 
@@ -112,6 +122,16 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
             <input type='checkbox' {...register('paused')} />
             Приостановить выполнение
           </label>
+        </div>
+
+        <div className='task-modal__field'>
+          <label>Метки</label>
+          <LabelsPicker value={labels} onChange={setLabels} maxLabels={3} />
+        </div>
+
+        <div className='task-modal__field'>
+          <label>Подзадачи</label>
+          <SubtasksEditor value={subtasks} onChange={setSubtasks} />
         </div>
 
         {/* Кнопки */}

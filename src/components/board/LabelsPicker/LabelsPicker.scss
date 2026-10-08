@@ -1,0 +1,41 @@
+.labels-picker {
+  display: flex; // 1. Flex-контейнер
+  flex-direction: column; // 2. Вертикально
+  gap: 8px; // 3. Отступ между счётчиком и палитрой
+
+  &__counter {
+    color: #9ca3af; // 4. Серый текст
+    font-size: 12px; // 5. Мелкий
+  }
+
+  &__colors {
+    display: flex; // 6. Цвета в ряд
+    flex-wrap: wrap; // 7. Перенос, если не влезают
+    gap: 8px; // 8. Отступ между цветами
+  }
+
+  &__color {
+    border: 2px solid transparent; // 9. Прозрачная рамка (для активного состояния)
+    border-radius: 50%; // 10. Круглая форма
+    cursor: pointer; // 11. Курсор
+    height: 24px; // 12. Размер
+    transition: transform 0.15s; // 13. Плавность
+    width: 24px; // 14. Размер
+
+    &:hover:not(:disabled) {
+      transform: scale(1.15); // 15. Увеличение при hover
+    }
+
+    // ← активная (выбранная) метка — белая обводка + галочка (псевдоэлемент)
+    &--active {
+      border-color: #fff; // 16. Белая рамка
+      box-shadow: 0 0 0 2px #2a2a2a; // 17. Внутренняя тень для контраста
+    }
+
+    // ← заблокированная кнопка (достигнут максимум)
+    &:disabled {
+      cursor: not-allowed; // 18. Курсор "запрещено"
+      opacity: 0.3; // 19. Полупрозрачность
+    }
+  }
+}

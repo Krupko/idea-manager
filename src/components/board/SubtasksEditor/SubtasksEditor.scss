@@ -1,0 +1,128 @@
+@use '../../../scss/mixins-flex' as *;
+
+.subtasks-editor {
+  @include flex-col; // 2. Вертикально
+
+  gap: 8px; // 3. Отступ между input и списком
+
+  // ← строка с input и кнопкой "+"
+  &__input-row {
+    display: flex; // 4. Input и кнопка в ряд
+    gap: 8px; // 5. Отступ
+  }
+
+  &__input {
+    background: #1e1e1e;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    color: #e5e7eb;
+    flex: 1; // 6. Занимает всё доступное место
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    padding: 10px 12px;
+    transition: border-color 0.15s;
+
+    &:focus {
+      border-color: #3b82f6;
+    }
+
+    &::placeholder {
+      color: #6b7280;
+    }
+  }
+
+  &__add-btn {
+    align-items: center;
+    background: #3b82f6;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    padding: 0 12px;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #2563eb;
+    }
+  }
+
+  &__list {
+    @include flex-col;
+
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__item {
+    align-items: center;
+    background: #1e1e1e;
+    border-radius: 6px;
+    display: flex;
+    gap: 10px;
+    padding: 8px 10px;
+
+    // ← выполненные — приглушённые
+    &--done {
+      opacity: 0.6;
+
+      .subtasks-editor__title {
+        text-decoration: line-through; // ← зачёркнуто
+      }
+    }
+  }
+
+  &__checkbox {
+    @include flex-center;
+
+    background: transparent;
+    border: 1px solid #6b7280;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 18px;
+    transition: all 0.15s;
+    width: 18px;
+
+    &:hover {
+      border-color: #3b82f6;
+    }
+
+    // ← если внутри — галочка, значит completed
+    .subtasks-editor__item--done & {
+      background: #10b981;
+      border-color: #10b981;
+    }
+  }
+
+  &__title {
+    color: #e5e7eb;
+    flex: 1; // ← занимает всё место
+    font-size: 14px;
+    overflow-wrap: break-word; // ← перенос длинных слов
+  }
+
+  &__remove-btn {
+    @include flex-center;
+
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #6b7280;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 24px;
+    transition: all 0.15s;
+    width: 24px;
+
+    &:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+  }
+}
