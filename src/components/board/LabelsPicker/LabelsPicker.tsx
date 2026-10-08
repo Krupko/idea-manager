@@ -46,7 +46,7 @@ export const LabelsPicker = ({ value, onChange, maxLabels = 3 }: LabelsPickerPro
             aria-label={`Метка ${color}`}
             disabled={!isSelected(color) && value.length >= maxLabels}
             style={{ backgroundColor: color }}
-          ></button>
+          />
         ))}
       </div>
     </div>

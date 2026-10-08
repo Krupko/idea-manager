@@ -51,8 +51,6 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
         deadline: initialTask?.deadline ?? '',
         paused: initialTask?.paused ?? false,
       });
-      // setLabels(initialTask?.labels ?? []);
-      // setSubtasks(initialTask?.subtasks ?? []);
     }
   }, [initialTask, isOpen, reset]);
 
@@ -63,7 +61,6 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
       deadline: data.deadline,
       labels,
       subtasks,
-      // subtasks: [], // TODO добавить редактор подзадач
       done: initialTask?.done ?? false,
       paused: data.paused,
     };

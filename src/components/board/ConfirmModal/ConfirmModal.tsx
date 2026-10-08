@@ -18,9 +18,9 @@ export const ConfirmModal = ({
   onClose,
   onConfirm,
   title = 'Вы уверены?',
-  message = 'Это действие нельзя будет отмeнить',
+  message = 'Это действие нельзя будет отменить',
   confirmText = 'Удалить',
-  cancelText = 'Отменить',
+  cancelText = 'Отмена',
   variant = 'danger',
 }: ConfirmModalProps) => {
   const handleConfirm = () => {
