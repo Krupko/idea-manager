@@ -3,6 +3,7 @@ import { Codepen } from '@/components/ui/Icon/Codepen';
 import { Github } from '@/components/ui/Icon/Github';
 import { Shape } from '@/components/ui/Icon/Shape';
 import { useState, type ReactNode } from 'react';
+import { UserMenu } from './userMenu/UserMenu';
 
 interface HeaderIcon {
   id: string;
@@ -38,12 +39,7 @@ export const Header = () => {
           ))}
         </div>
 
-        <button className='avatar' type='button'>
-          <span>Hi Aaryan</span>
-          <div className='wrap-avatar'>
-            <img src='/avatar.png' alt='Avatar' width='35' height='35' />
-          </div>
-        </button>
+        <UserMenu />
       </div>
     </header>
   );

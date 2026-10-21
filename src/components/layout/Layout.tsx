@@ -2,9 +2,13 @@ import './Layout.scss';
 import { Sidebar } from './Sidebar/Sidebar.tsx';
 import { Header } from './Header/Header';
 import { AddSection } from '../board/AddSection/AddSection.tsx';
-import { Board } from '../board/Board/Board.tsx';
+import type { ReactNode } from 'react';
 
-export const Layout = () => {
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export const Layout = ({ children }: LayoutProps) => {
   return (
     <div className='frame'>
       <Sidebar />
@@ -12,7 +16,7 @@ export const Layout = () => {
         <Header />
         <main className='main'>
           <AddSection />
-          <Board />
+          {children}
         </main>
       </div>
     </div>
