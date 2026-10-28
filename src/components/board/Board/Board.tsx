@@ -1,5 +1,6 @@
 import './Board.scss';
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Column } from '../Column/Column.tsx';
 import type { Column as ColumnType, Task } from '../types.ts';
 import { DEFAULT_COLUMNS } from '../data-local.ts';
@@ -8,6 +9,7 @@ import { TaskModal } from '../TaskModal/TaskModal.tsx';
 import { ConfirmModal } from '../ConfirmModal/ConfirmModal.tsx';
 
 export const Board = () => {
+  const { boardId } = useParams<{ boardId: string }>();
   const [columns, setColumns] = useState<ColumnType[]>(
     () => loadColumns<ColumnType[]>() ?? DEFAULT_COLUMNS
   );
@@ -99,6 +101,8 @@ export const Board = () => {
 
     return () => clearTimeout(timer);
   }, [justMovedTaskId]);
+
+  console.info('Текущая доска:', boardId);
 
   const handleDragStart = (taskId: string, columnId: string) => {
     setDraggedTaskId(taskId);

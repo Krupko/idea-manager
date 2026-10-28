@@ -22,6 +22,17 @@ function App() {
             element={
               <PrivateRoute>
                 <Layout>
+                  <Navigate to='/board/1' replace />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path='/board/:boardId'
+            element={
+              <PrivateRoute>
+                <Layout>
                   <Board />
                 </Layout>
               </PrivateRoute>
