@@ -44,3 +44,12 @@ export interface DbSubtask {
   order: number;
   created_at: string;
 }
+
+export interface CreateTaskDTO {
+  title: string;
+  description: string | null;
+  deadline: string | null;
+  done: boolean;
+  paused: boolean;
+  order: number;
+}

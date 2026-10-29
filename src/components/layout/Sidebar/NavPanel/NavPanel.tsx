@@ -58,7 +58,7 @@ export const NavPanel = () => {
             className='nav-panel__button'
             key={board.id}
             type='button'
-            onClick={() => navigate('/board/${board.id}')}
+            onClick={() => navigate(`/board/${board.id}`)}
           >
             <Circle className='nav-panel__icon' size={16} />
 

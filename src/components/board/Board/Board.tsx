@@ -3,17 +3,21 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Column } from '../Column/Column.tsx';
 import type { Column as ColumnType, Task } from '../types.ts';
-import { DEFAULT_COLUMNS } from '../data-local.ts';
-import { loadColumns, saveColumns } from '@/utils/storage.ts';
+import { getColumnsBoard } from '@/lib/repositories/columns.repository.ts';
+import { getTasksByColumn } from '@/lib/repositories/tasks.repository.ts';
 import { TaskModal } from '../TaskModal/TaskModal.tsx';
 import { ConfirmModal } from '../ConfirmModal/ConfirmModal.tsx';
+import {
+  createTask,
+  updateTask,
+  deleteTask,
+  moveTask,
+} from '@/lib/repositories/tasks.repository.ts';
 
 export const Board = () => {
   const { boardId } = useParams<{ boardId: string }>();
-  const [columns, setColumns] = useState<ColumnType[]>(
-    () => loadColumns<ColumnType[]>() ?? DEFAULT_COLUMNS
-  );
-
+  const [columns, setColumns] = useState<ColumnType[]>([]);
+  const [loading, setLoading] = useState(true);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [sourceColumnId, setSourceColumnId] = useState<string | null>(null);
   const [justMovedTaskId, setJustMovedTaskId] = useState<string | null>(null);
@@ -34,7 +38,7 @@ export const Board = () => {
     setIsModalOpen(true);
   };
 
-  const handleUpdateTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+  const handleUpdateTask = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (!editingTask) return;
 
     const updatedTask: Task = {
@@ -48,37 +52,130 @@ export const Board = () => {
         tasks: col.tasks.map((t) => (t.id === editingTask.id ? updatedTask : t)),
       }))
     );
+
+    // отправляем в бд
+    try {
+      await updateTask(editingTask.id, {
+        title: taskData.title,
+        description: taskData.description ?? null,
+        deadline: taskData.deadline ?? null,
+        done: taskData.done,
+        paused: taskData.paused,
+      });
+    } catch (err) {
+      console.error('Ошибка обновления задачи:', err);
+    }
     setEditingTask(null);
   };
 
-  const handleTaskSubmit = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+  const handleTaskSubmit = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (editingTask) {
-      handleUpdateTask(taskData);
+      await handleUpdateTask(taskData);
     } else {
-      handleCreateTask(taskData);
+      await handleCreateTask(taskData);
     }
   };
 
-  const handleCreateTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+  const handleCreateTask = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (!targetColumnId) return;
 
-    const newTask: Task = {
+    // const newTask: Task = {
+    //   ...taskData,
+    //   id: crypto.randomUUID(),
+    //   createdAt: new Date().toISOString(),
+    // };
+
+    const tempId = crypto.randomUUID();
+    const optimisticTask: Task = {
       ...taskData,
-      id: crypto.randomUUID(),
+      id: tempId,
       createdAt: new Date().toISOString(),
     };
 
+    // Обновляем UI
     setColumns((prev) =>
       prev.map((col) =>
-        col.id === targetColumnId ? { ...col, tasks: [...col.tasks, newTask] } : col
+        col.id === targetColumnId ? { ...col, tasks: [...col.tasks, optimisticTask] } : col
       )
     );
+
+    // отправляем в ид
+    try {
+      const created = await createTask(targetColumnId, {
+        title: taskData.title,
+        description: taskData.description ?? null,
+        deadline: taskData.deadline ?? null,
+        done: taskData.done,
+        paused: taskData.paused,
+        order: 0,
+      });
+
+      // замуна временного на реальный из дазы
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((t) =>
+            t.id === tempId ? { ...t, id: created.id, createdAt: created.created_at } : t
+          ),
+        }))
+      );
+    } catch (err) {
+      // откат: есди ошибка - удаление задачи из UI
+      console.error('Ошибка создания задачи:', err);
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.filter((t) => t.id !== tempId),
+        }))
+      );
+    }
+
     setTargetColumnId(null);
   };
 
   useEffect(() => {
-    saveColumns(columns);
-  }, [columns]);
+    if (!boardId) return; // если board нет - выходим
+
+    const loadBoard = async () => {
+      try {
+        setLoading(true);
+        const dbColumns = await getColumnsBoard(boardId); // получение колонок для этой доски\
+        // паралельно для каждой колонки получаем ее задачи
+        const columnsWithTasks = await Promise.all(
+          dbColumns.map(async (col) => {
+            const dbTasks = await getTasksByColumn(col.id);
+
+            // адаптируем задачи из бд (snake_case) под UI(camelCase)
+            const adaptedTasks: Task[] = dbTasks.map((t) => ({
+              id: t.id,
+              title: t.title,
+              description: t.description ?? undefined,
+              deadline: t.deadline ?? undefined,
+              done: t.done,
+              paused: t.paused ?? false,
+              createdAt: t.created_at,
+              subtasks: [],
+              labels: [],
+            }));
+
+            // Собираем колонку в формат ui
+            return {
+              id: col.id,
+              title: col.title,
+              tasks: adaptedTasks,
+            };
+          })
+        );
+        setColumns(columnsWithTasks);
+      } catch (err) {
+        console.error('Ошибка загрузки доски:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBoard();
+  }, [boardId]);
 
   useEffect(() => {
     if (draggedTaskId) {
@@ -102,7 +199,10 @@ export const Board = () => {
     return () => clearTimeout(timer);
   }, [justMovedTaskId]);
 
-  console.info('Текущая доска:', boardId);
+  if (import.meta.env.DEV) {
+    // Удалить на продакшене
+    console.info('Текущая доска:', boardId);
+  }
 
   const handleDragStart = (taskId: string, columnId: string) => {
     setDraggedTaskId(taskId);
@@ -114,7 +214,7 @@ export const Board = () => {
     setSourceColumnId(null);
   };
 
-  const handleDrop = (targetColumnId: string) => {
+  const handleDrop = async (targetColumnId: string) => {
     if (!draggedTaskId || !sourceColumnId) return;
 
     if (sourceColumnId === targetColumnId) {
@@ -145,12 +245,22 @@ export const Board = () => {
         return col;
       });
     });
+
+    // отправляем в бд
+    try {
+      const targetCol = columns.find((c) => c.id === targetColumnId);
+      const newOrder = targetCol ? targetCol.tasks.length : 0;
+      await moveTask(draggedTaskId, targetColumnId, newOrder);
+    } catch (err) {
+      console.error('Ошибка перемещения задачи:', err);
+    }
+
     setJustMovedTaskId(draggedTaskId);
     setDraggedTaskId(null);
     setSourceColumnId(null);
   };
 
-  const handleTaskDrop = (
+  const handleTaskDrop = async (
     targetColumnId: string,
     targetTaskId: string,
     position: 'before' | 'after'
@@ -181,6 +291,19 @@ export const Board = () => {
         return { ...col, tasks };
       });
     });
+
+    try {
+      // вычисление новой позиуии
+      const targetCol = columns.find((c) => c.id === targetColumnId);
+      if (targetCol) {
+        const targetIdx = targetCol.tasks.findIndex((t) => t.id === targetTaskId);
+        const newOrder = position === 'before' ? targetIdx : targetIdx + 1;
+        await moveTask(draggedTaskId, targetColumnId, newOrder);
+      }
+    } catch (err) {
+      console.error('Ошибка сортировки задач:', err);
+    }
+
     setJustMovedTaskId(draggedTaskId);
     setDraggedTaskId(null);
     setSourceColumnId(null);
@@ -190,28 +313,62 @@ export const Board = () => {
     setDeletingTask(task);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deletingTask) return; // 1. Защита: если нет задачи — выходим
+
+    const taskId = deletingTask.id;
 
     setColumns((prev) =>
       prev.map((col) => ({
         ...col,
         // 2. Фильтруем задачи: убираем удаляемую
-        tasks: col.tasks.filter((t) => t.id !== deletingTask.id),
+        tasks: col.tasks.filter((t) => t.id !== taskId),
       }))
     );
 
     setDeletingTask(null); // 3. Сбрасываем
+
+    try {
+      await deleteTask(taskId);
+    } catch (err) {
+      console.error('Ошибка удаление задачи:', err);
+      alert('Не удалось удалить задачу. Попробуйте еще раз');
+    }
   };
 
-  const handleTogglePause = (taskId: string) => {
+  const handleTogglePause = async (taskId: string) => {
+    // находим задачу и ее текущий статус
+    let newPaused = false;
+    columns.forEach((col) => {
+      const task = col.tasks.find((t) => t.id === taskId);
+      if (task) newPaused = !task.paused;
+    });
+
     setColumns((prev) =>
       prev.map((col) => ({
         ...col,
-        tasks: col.tasks.map((t) => (t.id === taskId ? { ...t, paused: !t.paused } : t)),
+        tasks: col.tasks.map((t) => (t.id === taskId ? { ...t, paused: newPaused } : t)),
       }))
     );
+
+    // отправляем в бд
+    try {
+      await updateTask(taskId, { paused: newPaused });
+    } catch (err) {
+      // откат
+      console.error('Ошибка смены паузы:', err);
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((t) => (t.id === taskId ? { ...t, paused: !newPaused } : t)),
+        }))
+      );
+    }
   };
+
+  if (loading) {
+    return <div style={{ padding: '20px', color: '#fff' }}>Загрузка доски...</div>;
+  }
 
   return (
     <div className='board'>

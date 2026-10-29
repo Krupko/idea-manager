@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { DbTask } from '@/types/db';
+import type { DbTask, CreateTaskDTO } from '@/types/db';
 
 // Получить все задачи конкретной колонки
 export const getTasksByColumn = async (columnId: string): Promise<DbTask[]> => {
@@ -14,10 +14,7 @@ export const getTasksByColumn = async (columnId: string): Promise<DbTask[]> => {
 };
 
 // Создать задачу
-export const createTask = async (
-  columnId: string,
-  data: Omit<DbTask, 'id' | 'column_id' | 'created_at' | 'updated_at'>
-): Promise<DbTask> => {
+export const createTask = async (columnId: string, data: CreateTaskDTO): Promise<DbTask> => {
   const { data: created, error } = await supabase
     .from('tasks')
     .insert({ ...data, column_id: columnId })
