@@ -81,4 +81,90 @@
     color: #6b7280;
     font-size: 12px;
   }
+
+  &__item {
+    align-items: center;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+
+    &:hover {
+      background: #374151;
+
+      .nav-panel__menu-btn {
+        opacity: 1; // Показываем кнопку меню при наведении
+      }
+    }
+
+    // Отменяем фон у самой кнопки, чтобы не было двойного подсвечивания
+    .nav-panel__button {
+      background: transparent;
+      flex: 1;
+    }
+  }
+
+  // ← ДОБАВЛЕНО: кнопка три точки
+  &__menu-btn {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #9ca3af;
+    cursor: pointer;
+    display: flex;
+    height: 24px;
+    justify-content: center;
+    margin-right: 8px;
+    opacity: 0; // Скрыта по умолчанию
+    transition: all 0.15s;
+    width: 24px;
+
+    &:hover {
+      background: #4b5563;
+      color: #fff;
+    }
+  }
+
+  &__menu-wrapper {
+    position: relative;
+  }
+
+  // ← ДОБАВЛЕНО: выпадающее меню
+  &__dropdown {
+    background: #1e1e1e;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgb(0 0 0 / 50%);
+    min-width: 160px;
+    padding: 4px;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 100;
+  }
+
+  &__dropdown-item {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #e5e7eb;
+    cursor: pointer;
+    display: flex;
+    font-size: 13px;
+    gap: 8px;
+    padding: 8px 12px;
+    transition: background 0.15s;
+    width: 100%;
+
+    &:hover {
+      background: #374151;
+    }
+
+    &--danger:hover {
+      background: rgb(239 68 68 / 15%);
+      color: #ef4444;
+    }
+  }
 }

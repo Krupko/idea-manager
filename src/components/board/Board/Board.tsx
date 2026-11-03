@@ -13,6 +13,7 @@ import {
   deleteTask,
   moveTask,
 } from '@/lib/repositories/tasks.repository.ts';
+import { useBoardRealtime } from '@/hooks/useBoardRealtime.ts';
 
 export const Board = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -25,6 +26,52 @@ export const Board = () => {
   const [targetColumnId, setTargetColumnId] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+
+  const loadBoard = async () => {
+    if (!boardId) return;
+    try {
+      setLoading(true);
+      const dbColumns = await getColumnsBoard(boardId);
+      const columnsWithTasks = await Promise.all(
+        dbColumns.map(async (col) => {
+          const dbTasks = await getTasksByColumn(col.id);
+          const adaptedTasks: Task[] = dbTasks.map((t) => ({
+            id: t.id,
+            title: t.title,
+            description: t.description ?? undefined,
+            deadline: t.deadline ?? undefined,
+            done: t.done,
+            paused: t.paused ?? false,
+            createdAt: t.created_at,
+            subtasks: [],
+            labels: [],
+          }));
+          return { id: col.id, title: col.title, tasks: adaptedTasks };
+        })
+      );
+      setColumns(columnsWithTasks);
+    } catch (err) {
+      console.error('Ошибка загрузки доски:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ПЕРВОНАЧАЛЬНАЯ ЗАГРУЗКА
+  useEffect(() => {
+    const initFetch = async () => {
+      await loadBoard();
+    };
+    void initFetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId]);
+
+  // ПОДКЛЮЧАЕМ REALTIME
+  useBoardRealtime({
+    boardId,
+    onColumnsChange: loadBoard,
+    onTasksChange: loadBoard,
+  });
 
   const handleAddTask = (columnId: string) => {
     setTargetColumnId(columnId);
@@ -79,12 +126,6 @@ export const Board = () => {
   const handleCreateTask = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (!targetColumnId) return;
 
-    // const newTask: Task = {
-    //   ...taskData,
-    //   id: crypto.randomUUID(),
-    //   createdAt: new Date().toISOString(),
-    // };
-
     const tempId = crypto.randomUUID();
     const optimisticTask: Task = {
       ...taskData,
@@ -132,50 +173,6 @@ export const Board = () => {
 
     setTargetColumnId(null);
   };
-
-  useEffect(() => {
-    if (!boardId) return; // если board нет - выходим
-
-    const loadBoard = async () => {
-      try {
-        setLoading(true);
-        const dbColumns = await getColumnsBoard(boardId); // получение колонок для этой доски\
-        // паралельно для каждой колонки получаем ее задачи
-        const columnsWithTasks = await Promise.all(
-          dbColumns.map(async (col) => {
-            const dbTasks = await getTasksByColumn(col.id);
-
-            // адаптируем задачи из бд (snake_case) под UI(camelCase)
-            const adaptedTasks: Task[] = dbTasks.map((t) => ({
-              id: t.id,
-              title: t.title,
-              description: t.description ?? undefined,
-              deadline: t.deadline ?? undefined,
-              done: t.done,
-              paused: t.paused ?? false,
-              createdAt: t.created_at,
-              subtasks: [],
-              labels: [],
-            }));
-
-            // Собираем колонку в формат ui
-            return {
-              id: col.id,
-              title: col.title,
-              tasks: adaptedTasks,
-            };
-          })
-        );
-        setColumns(columnsWithTasks);
-      } catch (err) {
-        console.error('Ошибка загрузки доски:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBoard();
-  }, [boardId]);
 
   useEffect(() => {
     if (draggedTaskId) {
