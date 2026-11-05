@@ -5,6 +5,8 @@ import { Column } from '../Column/Column.tsx';
 import type { Column as ColumnType, Task } from '../types.ts';
 import { getColumnsBoard } from '@/lib/repositories/columns.repository.ts';
 import { getTasksByColumn } from '@/lib/repositories/tasks.repository.ts';
+import { getLabelByTask } from '@/lib/repositories/labels.repository.ts';
+import { getSubtaskByTask } from '@/lib/repositories/subtasks.repository.ts';
 import { TaskModal } from '../TaskModal/TaskModal.tsx';
 import { ConfirmModal } from '../ConfirmModal/ConfirmModal.tsx';
 import {
@@ -35,17 +37,34 @@ export const Board = () => {
       const columnsWithTasks = await Promise.all(
         dbColumns.map(async (col) => {
           const dbTasks = await getTasksByColumn(col.id);
-          const adaptedTasks: Task[] = dbTasks.map((t) => ({
-            id: t.id,
-            title: t.title,
-            description: t.description ?? undefined,
-            deadline: t.deadline ?? undefined,
-            done: t.done,
-            paused: t.paused ?? false,
-            createdAt: t.created_at,
-            subtasks: [],
-            labels: [],
-          }));
+
+          const adaptedTasks: Task[] = await Promise.all(
+            dbTasks.map(async (t) => {
+              // закружаем метки и подзадачи\
+              const dbLabels = await getLabelByTask(t.id);
+              const dbSubtasks = await getSubtaskByTask(t.id);
+
+              return {
+                id: t.id,
+                title: t.title,
+                description: t.description ?? undefined,
+                deadline: t.deadline ?? undefined,
+                done: t.done,
+                paused: t.paused ?? false,
+                createdAt: t.created_at,
+                labels: dbLabels.map((l) => ({
+                  id: l.id,
+                  color: l.color,
+                })),
+                subtasks: dbSubtasks.map((s) => ({
+                  id: s.id,
+                  title: s.title,
+                  completed: s.completed,
+                })),
+              };
+            })
+          );
+
           return { id: col.id, title: col.title, tasks: adaptedTasks };
         })
       );
@@ -71,6 +90,7 @@ export const Board = () => {
     boardId,
     onColumnsChange: loadBoard,
     onTasksChange: loadBoard,
+    onBoardChange: loadBoard,
   });
 
   const handleAddTask = (columnId: string) => {
@@ -91,6 +111,8 @@ export const Board = () => {
     const updatedTask: Task = {
       ...editingTask,
       ...taskData,
+      labels: taskData.labels ?? editingTask.labels,
+      subtasks: taskData.subtasks ?? editingTask.subtasks,
       updatedAt: new Date().toISOString(),
     };
     setColumns((prev) =>
@@ -102,13 +124,18 @@ export const Board = () => {
 
     // отправляем в бд
     try {
-      await updateTask(editingTask.id, {
-        title: taskData.title,
-        description: taskData.description ?? null,
-        deadline: taskData.deadline ?? null,
-        done: taskData.done,
-        paused: taskData.paused,
-      });
+      await updateTask(
+        editingTask.id,
+        {
+          title: taskData.title,
+          description: taskData.description ?? null,
+          deadline: taskData.deadline ?? null,
+          done: taskData.done,
+          paused: taskData.paused,
+        },
+        taskData.labels,
+        taskData.subtasks
+      );
     } catch (err) {
       console.error('Ошибка обновления задачи:', err);
     }
@@ -142,14 +169,19 @@ export const Board = () => {
 
     // отправляем в ид
     try {
-      const created = await createTask(targetColumnId, {
-        title: taskData.title,
-        description: taskData.description ?? null,
-        deadline: taskData.deadline ?? null,
-        done: taskData.done,
-        paused: taskData.paused,
-        order: 0,
-      });
+      const created = await createTask(
+        targetColumnId,
+        {
+          title: taskData.title,
+          description: taskData.description ?? null,
+          deadline: taskData.deadline ?? null,
+          done: taskData.done,
+          paused: taskData.paused,
+          order: 0,
+        },
+        taskData.labels,
+        taskData.subtasks
+      );
 
       // замуна временного на реальный из дазы
       setColumns((prev) =>

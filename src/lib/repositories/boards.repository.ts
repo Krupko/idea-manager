@@ -31,7 +31,7 @@ export const createBoard = async (title: string, description?: string): Promise<
   } = await supabase.auth.getUser();
 
   if (!user) throw new Error('Пользователь не авторизован');
-
+  console.log('Создаю доску. ID пользователя:', user.id);
   const { data, error } = await supabase
     .from('boards')
     .insert({

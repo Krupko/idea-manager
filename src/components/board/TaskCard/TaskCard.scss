@@ -47,6 +47,8 @@
 
   h4 {
     margin: 15px 0;
+    overflow-wrap: anywhere;
+    word-break: normal;
 
     font: {
       family: var(--font-pop);
@@ -76,6 +78,8 @@
 
     color: var(--color-white);
     line-height: 1.6;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   &__deadline {

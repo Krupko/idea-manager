@@ -5,12 +5,14 @@ interface UseBoardRealtimeProps {
   boardId: string | undefined; // Id доски за которым следим
   onColumnsChange: () => void; // Callback - если изменилась колонка
   onTasksChange: () => void; // Callback - если изменилась задача
+  onBoardChange: () => void; // Callback - если изменилась доска
 }
 
 export const useBoardRealtime = ({
   boardId,
   onColumnsChange,
   onTasksChange,
+  onBoardChange,
 }: UseBoardRealtimeProps) => {
   useEffect(() => {
     if (!boardId) return; // Если доска не выбрана - не подписываемся
@@ -36,11 +38,15 @@ export const useBoardRealtime = ({
           onTasksChange();
         }
       )
+      // подписка на изменение досок
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, () =>
+        onBoardChange()
+      )
       .subscribe(); // активация подписки
 
     return () => {
       // отписка cleanup
       supabase.removeChannel(channel);
     };
-  }, [boardId, onColumnsChange, onTasksChange]);
+  }, [boardId, onColumnsChange, onTasksChange, onBoardChange]);
 };

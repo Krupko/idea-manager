@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthProvider';
 import { RegisterPage } from '@/pages/Auth/RegisterPage';
 import { PrivateRoute } from '@/routes/PrivateRoute';
 import { Board } from '@/components/board/Board/Board';
+import { RootRedirect } from '@/components/RootRedirect/RootRedirect';
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
             element={
               <PrivateRoute>
                 <Layout>
-                  <Navigate to='/board/1' replace />
+                  <RootRedirect />
                 </Layout>
               </PrivateRoute>
             }

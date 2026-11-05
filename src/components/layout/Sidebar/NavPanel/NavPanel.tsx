@@ -10,6 +10,7 @@ import {
 import type { DbBoard } from '@/types/db';
 import { BoardModal } from '@/components/board/BoardModal/BoardModal';
 import { ConfirmModal } from '@/components/board/ConfirmModal/ConfirmModal';
+import { supabase } from '@/lib/supabase';
 import './NavPanel.scss';
 
 export const NavPanel = () => {
@@ -37,6 +38,22 @@ export const NavPanel = () => {
       }
     };
     loadBoards();
+  }, []);
+
+  useEffect(() => {
+    // создаем канал
+    const channel = supabase
+      .channel('boards_list') // имя канала
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, async () => {
+        // если доска создана\удадена\изменина - перезапрашиваем список
+        const updatedBoards = await getBoards();
+        setBoards(updatedBoards);
+      })
+      .subscribe();
+    // отписка
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleCreateBoard = async (data: { title: string; description?: string }) => {
@@ -205,7 +222,7 @@ export const NavPanel = () => {
         onClose={() => setDeletingBoard(null)}
         onConfirm={handleConfirmDelete}
         title='Удалить доску?'
-        message={`Вы уверены, что хотиту удалить доску "${deletingBoard?.title}"? Все задачи внутри нее будут удалены`}
+        message={`Вы уверены, что хотите удалить доску "${deletingBoard?.title}"? Все задачи внутри нее будут удалены`}
         confirmText='Удалить'
         cancelText='Отмена'
         variant='danger'
