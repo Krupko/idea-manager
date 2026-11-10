@@ -98,6 +98,11 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
+   -- 1. Создаем профиль
+  insert into public.profiles (id, email)
+  values (new.id, new.email);
+
+   -- 2. Создаем доски
   insert into public.boards (owner_id, title, description)
   values
     (new.id, 'My Tracks', 'Личные задачи'),

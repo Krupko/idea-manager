@@ -16,6 +16,8 @@ import {
   moveTask,
 } from '@/lib/repositories/tasks.repository.ts';
 import { useBoardRealtime } from '@/hooks/useBoardRealtime.ts';
+import { ShareBoardModal } from '../ShareBoardModal/ShareBoardModal.tsx';
+import { LayoutList, UserPlus } from 'lucide-react';
 
 export const Board = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -28,6 +30,8 @@ export const Board = () => {
   const [targetColumnId, setTargetColumnId] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+  const [background, setBackground] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const loadBoard = async () => {
     if (!boardId) return;
@@ -382,7 +386,7 @@ export const Board = () => {
 
     // отправляем в бд
     try {
-      await updateTask(taskId, { paused: newPaused });
+      await updateTask(taskId, { paused: newPaused }, undefined, undefined);
     } catch (err) {
       // откат
       console.error('Ошибка смены паузы:', err);
@@ -401,6 +405,18 @@ export const Board = () => {
 
   return (
     <div className='board'>
+      <div className='board__header'>
+        <button onClick={() => setBackground(!background)} className='add-button' type='button'>
+          <LayoutList size={18} />
+          <span>Add Section</span>
+        </button>
+
+        <button className='board__share-btn' onClick={() => setIsShareModalOpen(true)}>
+          <UserPlus size={20} />
+          <span>Поделиться</span>
+        </button>
+      </div>
+
       <div className='board-columns'>
         {columns.map((column) => (
           <Column
@@ -441,6 +457,14 @@ export const Board = () => {
         cancelText='Отмена'
         variant='danger'
       />
+
+      {boardId && (
+        <ShareBoardModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          boardId={boardId}
+        />
+      )}
     </div>
   );
 };

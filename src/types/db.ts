@@ -53,3 +53,11 @@ export interface CreateTaskDTO {
   paused: boolean;
   order: number;
 }
+
+export interface DbBoardMember {
+  id: string;
+  boaed_id: string;
+  user_id: string;
+  role: 'owner' | 'editor' | 'viewer';
+  created_at: string;
+}

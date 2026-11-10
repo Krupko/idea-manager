@@ -1,7 +1,6 @@
 import './Layout.scss';
 import { Sidebar } from './Sidebar/Sidebar.tsx';
 import { Header } from './Header/Header';
-import { AddSection } from '../board/AddSection/AddSection.tsx';
 import type { ReactNode } from 'react';
 
 interface LayoutProps {
@@ -14,10 +13,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <Sidebar />
       <div className='content'>
         <Header />
-        <main className='main'>
-          <AddSection />
-          {children}
-        </main>
+        <main className='main'>{children}</main>
       </div>
     </div>
   );
