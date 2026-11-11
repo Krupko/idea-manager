@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Column } from '../Column/Column.tsx';
 import type { Column as ColumnType, Task } from '../types.ts';
-import { getColumnsBoard } from '@/lib/repositories/columns.repository.ts';
+import { createColumn, getColumnsBoard } from '@/lib/repositories/columns.repository.ts';
 import { getTasksByColumn } from '@/lib/repositories/tasks.repository.ts';
 import { getLabelByTask } from '@/lib/repositories/labels.repository.ts';
 import { getSubtaskByTask } from '@/lib/repositories/subtasks.repository.ts';
@@ -18,6 +18,7 @@ import {
 import { useBoardRealtime } from '@/hooks/useBoardRealtime.ts';
 import { ShareBoardModal } from '../ShareBoardModal/ShareBoardModal.tsx';
 import { LayoutList, UserPlus } from 'lucide-react';
+import { AddSectionModal } from '../AddSectionModal/AddSectionModal.tsx';
 
 export const Board = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -30,8 +31,9 @@ export const Board = () => {
   const [targetColumnId, setTargetColumnId] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
-  const [background, setBackground] = useState(false);
+  // const [background, setBackground] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
 
   const loadBoard = async () => {
     if (!boardId) return;
@@ -187,7 +189,7 @@ export const Board = () => {
         taskData.subtasks
       );
 
-      // замуна временного на реальный из дазы
+      // замена временного на реальный из дазы
       setColumns((prev) =>
         prev.map((col) => ({
           ...col,
@@ -403,10 +405,21 @@ export const Board = () => {
     return <div style={{ padding: '20px', color: '#fff' }}>Загрузка доски...</div>;
   }
 
+  const handleCreateColumn = async (title: string) => {
+    if (!boardId) return;
+
+    try {
+      await createColumn(boardId, title, columns.length);
+      await loadBoard();
+    } catch (err) {
+      console.error('Ошибка создания колонки', err);
+    }
+  };
+
   return (
     <div className='board'>
       <div className='board__header'>
-        <button onClick={() => setBackground(!background)} className='add-button' type='button'>
+        <button onClick={() => setIsSectionModalOpen(true)} className='add-button' type='button'>
           <LayoutList size={18} />
           <span>Add Section</span>
         </button>
@@ -465,6 +478,12 @@ export const Board = () => {
           boardId={boardId}
         />
       )}
+
+      <AddSectionModal
+        isOpen={isSectionModalOpen}
+        onClose={() => setIsSectionModalOpen(false)}
+        onSubmit={handleCreateColumn}
+      />
     </div>
   );
 };
