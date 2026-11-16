@@ -24,6 +24,7 @@ export const NavPanel = () => {
 
   const navigate = useNavigate();
 
+  // ---- Загрузка списка досок при монтировании -------
   useEffect(() => {
     const loadBoards = async () => {
       try {
@@ -44,10 +45,12 @@ export const NavPanel = () => {
     // создаем канал
     const channel = supabase
       .channel('boards_list') // имя канала
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, async () => {
-        // если доска создана\удадена\изменина - перезапрашиваем список
-        const updatedBoards = await getBoards();
-        setBoards(updatedBoards);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, () => {
+        void (async () => {
+          // если доска создана\удадена\изменина - перезапрашиваем список
+          const updatedBoards = await getBoards();
+          setBoards(updatedBoards);
+        })();
       })
       .subscribe();
     // отписка
@@ -55,6 +58,22 @@ export const NavPanel = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Закрытие меню по клику на подложку
+  useEffect(() => {
+    if (!menuOpenId) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Element | null;
+
+      if (!target?.closest('.nav-panel__menu-wrapper')) {
+        setMenuOpenId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpenId]);
 
   const handleCreateBoard = async (data: { title: string; description?: string }) => {
     try {
@@ -79,7 +98,10 @@ export const NavPanel = () => {
   const handleUpdateBoard = async (data: { title: string; description?: string }) => {
     if (!editingBoard) return;
     try {
-      await updateBoard(editingBoard.id, data.title);
+      await updateBoard(editingBoard.id, {
+        title: data.title,
+        description: data.description ?? null,
+      });
       const updatedBoards = await getBoards();
       setBoards(updatedBoards);
       setEditingBoard(null);
@@ -116,10 +138,8 @@ export const NavPanel = () => {
   if (loading) {
     return (
       <aside className='nav-panel'>
-        <div className='nav-panel__logo'>
-          <div className='nav-panel__logo'>Trello</div>
-          <div className='nav-panel__loading'>Загрузка...</div>
-        </div>
+        <div className='nav-panel__logo'>Idea-manager</div>
+        <div className='nav-panel__loading'>Загрузка...</div>
       </aside>
     );
   }
@@ -127,10 +147,8 @@ export const NavPanel = () => {
   if (error) {
     return (
       <aside className='nav-panel'>
-        <div className='nav-panel__logo'>
-          <div className='nav-panel__logo'>Trello</div>
-          <div className='nav-panel__error'>{error}</div>
-        </div>
+        <div className='nav-panel__logo'>Idea-manager</div>
+        <div className='nav-panel__error'>{error}</div>
       </aside>
     );
   }
@@ -138,7 +156,7 @@ export const NavPanel = () => {
   return (
     <>
       <aside className='nav-panel'>
-        <div className='nav-panel__logo'>Trello</div>
+        <div className='nav-panel__logo'>Idea-manager</div>
         <nav className='nav-panel__list'>
           {boards.map((board) => (
             <div key={board.id} className='nav-panel__item'>

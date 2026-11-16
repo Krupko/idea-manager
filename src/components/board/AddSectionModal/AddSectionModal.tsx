@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Modal } from '@/components/ui/Modal/Modal';
 import './AddSectionModal.scss';
+import { useEffect } from 'react';
 
 const sectionSchema = z.object({
   title: z.string().min(1, 'Название обязательно').max(50, 'Не более 50 символов'),
@@ -14,9 +15,15 @@ interface AddSectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (title: string) => void;
+  initialTitle?: string; // Добавлен режим редактирования
 }
 
-export const AddSectionModal = ({ isOpen, onClose, onSubmit }: AddSectionModalProps) => {
+export const AddSectionModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialTitle = '',
+}: AddSectionModalProps) => {
   const {
     register,
     handleSubmit,
@@ -24,8 +31,14 @@ export const AddSectionModal = ({ isOpen, onClose, onSubmit }: AddSectionModalPr
     formState: { errors, isSubmitting },
   } = useForm<SectionFormData>({
     resolver: zodResolver(sectionSchema),
-    defaultValues: { title: '' },
+    defaultValues: { title: initialTitle },
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      reset({ title: initialTitle });
+    }
+  }, [isOpen, initialTitle, reset]);
 
   const handleClose = () => {
     reset();

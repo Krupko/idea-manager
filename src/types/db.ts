@@ -26,7 +26,7 @@ export interface DbTask {
   paused: boolean;
   order: number;
   created_at: string;
-  update_at: string | null;
+  updated_at: string | null;
 }
 
 export interface DbLabel {
@@ -56,7 +56,7 @@ export interface CreateTaskDTO {
 
 export interface DbBoardMember {
   id: string;
-  boaed_id: string;
+  board_id: string;
   user_id: string;
   role: 'owner' | 'editor' | 'viewer';
   created_at: string;

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Column } from '../Column/Column.tsx';
 import type { Column as ColumnType, Task } from '../types.ts';
-import { createColumn, getColumnsBoard } from '@/lib/repositories/columns.repository.ts';
 import { getTasksByColumn } from '@/lib/repositories/tasks.repository.ts';
 import { getLabelByTask } from '@/lib/repositories/labels.repository.ts';
 import { getSubtaskByTask } from '@/lib/repositories/subtasks.repository.ts';
@@ -19,6 +18,12 @@ import { useBoardRealtime } from '@/hooks/useBoardRealtime.ts';
 import { ShareBoardModal } from '../ShareBoardModal/ShareBoardModal.tsx';
 import { LayoutList, UserPlus } from 'lucide-react';
 import { AddSectionModal } from '../AddSectionModal/AddSectionModal.tsx';
+import {
+  createColumn,
+  getColumnsBoard,
+  updateColumn,
+  deleteColumn,
+} from '@/lib/repositories/columns.repository.ts';
 
 export const Board = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -31,9 +36,10 @@ export const Board = () => {
   const [targetColumnId, setTargetColumnId] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
-  // const [background, setBackground] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
+  const [editingColumn, setEditingColumn] = useState<ColumnType | null>(null);
+  const [deletingColumn, setDeletingColumn] = useState<ColumnType | null>(null);
 
   const loadBoard = async () => {
     if (!boardId) return;
@@ -99,6 +105,36 @@ export const Board = () => {
     onBoardChange: loadBoard,
   });
 
+  // Функция создания / удаления колонки
+  const handleColumnSubmit = async (title: string): Promise<void> => {
+    if (!boardId) return;
+    try {
+      if (editingColumn) {
+        // Режим редактирования
+        await updateColumn(editingColumn.id, { title });
+        setEditingColumn(null);
+      } else {
+        // Режим создания
+        await createColumn(boardId, title, columns.length);
+      }
+      await loadBoard(); // Перезагрузка доски
+    } catch (err) {
+      console.error('Ошибка колонки', err);
+    }
+  };
+
+  //Функция удаления колонки
+  const handleConfirmDeleteColumn = async (): Promise<void> => {
+    if (!deletingColumn) return;
+    try {
+      await deleteColumn(deletingColumn.id);
+      setDeletingColumn(null);
+      await loadBoard();
+    } catch (err) {
+      console.error('Ошибка удаления колонки', err);
+    }
+  };
+
   const handleAddTask = (columnId: string) => {
     setTargetColumnId(columnId);
     setEditingTask(null);
@@ -111,7 +147,7 @@ export const Board = () => {
     setIsModalOpen(true);
   };
 
-  const handleUpdateTask = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+  const handleUpdateTask = async (taskData: Omit<Task, 'id' | 'createdAt'>): Promise<void> => {
     if (!editingTask) return;
 
     const updatedTask: Task = {
@@ -135,7 +171,7 @@ export const Board = () => {
         {
           title: taskData.title,
           description: taskData.description ?? null,
-          deadline: taskData.deadline ?? null,
+          deadline: taskData.deadline || null,
           done: taskData.done,
           paused: taskData.paused,
         },
@@ -148,7 +184,7 @@ export const Board = () => {
     setEditingTask(null);
   };
 
-  const handleTaskSubmit = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+  const handleTaskSubmit = async (taskData: Omit<Task, 'id' | 'createdAt'>): Promise<void> => {
     if (editingTask) {
       await handleUpdateTask(taskData);
     } else {
@@ -156,7 +192,7 @@ export const Board = () => {
     }
   };
 
-  const handleCreateTask = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+  const handleCreateTask = async (taskData: Omit<Task, 'id' | 'createdAt'>): Promise<void> => {
     if (!targetColumnId) return;
 
     const tempId = crypto.randomUUID();
@@ -180,7 +216,7 @@ export const Board = () => {
         {
           title: taskData.title,
           description: taskData.description ?? null,
-          deadline: taskData.deadline ?? null,
+          deadline: taskData.deadline || null,
           done: taskData.done,
           paused: taskData.paused,
           order: 0,
@@ -189,7 +225,7 @@ export const Board = () => {
         taskData.subtasks
       );
 
-      // замена временного на реальный из дазы
+      // замена временного id на реальный из дазы
       setColumns((prev) =>
         prev.map((col) => ({
           ...col,
@@ -249,7 +285,7 @@ export const Board = () => {
     setSourceColumnId(null);
   };
 
-  const handleDrop = async (targetColumnId: string) => {
+  const handleDrop = async (targetColumnId: string): Promise<void> => {
     if (!draggedTaskId || !sourceColumnId) return;
 
     if (sourceColumnId === targetColumnId) {
@@ -257,6 +293,9 @@ export const Board = () => {
       setSourceColumnId(null);
       return;
     }
+
+    const targetCol = columns.find((c) => c.id === targetColumnId);
+    const newOrder = targetCol ? targetCol.tasks.length : 0;
 
     setColumns((prev) => {
       const sourceColumn = prev.find((c) => c.id === sourceColumnId);
@@ -283,8 +322,6 @@ export const Board = () => {
 
     // отправляем в бд
     try {
-      const targetCol = columns.find((c) => c.id === targetColumnId);
-      const newOrder = targetCol ? targetCol.tasks.length : 0;
       await moveTask(draggedTaskId, targetColumnId, newOrder);
     } catch (err) {
       console.error('Ошибка перемещения задачи:', err);
@@ -299,9 +336,12 @@ export const Board = () => {
     targetColumnId: string,
     targetTaskId: string,
     position: 'before' | 'after'
-  ) => {
+  ): Promise<void> => {
     if (!draggedTaskId || !sourceColumnId) return;
     if (draggedTaskId === targetTaskId) return;
+
+    const targetCol = columns.find((c) => c.id === targetColumnId);
+    const targetIdx = targetCol ? targetCol.tasks.findIndex((t) => t.id === targetTaskId) : -1;
 
     setColumns((prev) => {
       const sourceColumn = prev.find((c) => c.id === sourceColumnId);
@@ -316,10 +356,8 @@ export const Board = () => {
         }
 
         if (col.id === targetColumnId) {
-          const targetIndex = tasks.findIndex((t) => t.id === targetTaskId);
-
-          const insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
-
+          const idx = tasks.findIndex((t) => t.id === targetTaskId);
+          const insertIndex = position === 'before' ? idx : idx + 1;
           tasks = [...tasks.slice(0, insertIndex), task, ...tasks.slice(insertIndex)];
         }
 
@@ -328,13 +366,18 @@ export const Board = () => {
     });
 
     try {
+      let newOrder: number;
       // вычисление новой позиуии
-      const targetCol = columns.find((c) => c.id === targetColumnId);
-      if (targetCol) {
-        const targetIdx = targetCol.tasks.findIndex((t) => t.id === targetTaskId);
-        const newOrder = position === 'before' ? targetIdx : targetIdx + 1;
-        await moveTask(draggedTaskId, targetColumnId, newOrder);
+      if (sourceColumnId === targetColumnId) {
+        const sourceIdx = targetCol ? targetCol.tasks.findIndex((t) => t.id === draggedTaskId) : -1;
+        newOrder = position === 'before' ? targetIdx : targetIdx + 1;
+        if (sourceIdx !== -1 && sourceIdx < targetIdx) {
+          newOrder -= 1;
+        }
+      } else {
+        newOrder = position === 'before' ? targetIdx : targetIdx + 1;
       }
+      await moveTask(draggedTaskId, targetColumnId, newOrder);
     } catch (err) {
       console.error('Ошибка сортировки задач:', err);
     }
@@ -348,7 +391,7 @@ export const Board = () => {
     setDeletingTask(task);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (): Promise<void> => {
     if (!deletingTask) return; // 1. Защита: если нет задачи — выходим
 
     const taskId = deletingTask.id;
@@ -368,16 +411,14 @@ export const Board = () => {
     } catch (err) {
       console.error('Ошибка удаление задачи:', err);
       alert('Не удалось удалить задачу. Попробуйте еще раз');
+      await loadBoard();
     }
   };
 
-  const handleTogglePause = async (taskId: string) => {
-    // находим задачу и ее текущий статус
-    let newPaused = false;
-    columns.forEach((col) => {
-      const task = col.tasks.find((t) => t.id === taskId);
-      if (task) newPaused = !task.paused;
-    });
+  const handleTogglePause = async (taskId: string): Promise<void> => {
+    const task = columns.flatMap((c) => c.tasks).find((t) => t.id === taskId);
+    if (!task) return;
+    const newPaused = !task.paused;
 
     setColumns((prev) =>
       prev.map((col) => ({
@@ -392,6 +433,7 @@ export const Board = () => {
     } catch (err) {
       // откат
       console.error('Ошибка смены паузы:', err);
+      //  откат
       setColumns((prev) =>
         prev.map((col) => ({
           ...col,
@@ -405,21 +447,17 @@ export const Board = () => {
     return <div style={{ padding: '20px', color: '#fff' }}>Загрузка доски...</div>;
   }
 
-  const handleCreateColumn = async (title: string) => {
-    if (!boardId) return;
-
-    try {
-      await createColumn(boardId, title, columns.length);
-      await loadBoard();
-    } catch (err) {
-      console.error('Ошибка создания колонки', err);
-    }
-  };
-
   return (
     <div className='board'>
       <div className='board__header'>
-        <button onClick={() => setIsSectionModalOpen(true)} className='add-button' type='button'>
+        <button
+          onClick={() => {
+            setEditingColumn(null);
+            setIsSectionModalOpen(true);
+          }}
+          className='add-button'
+          type='button'
+        >
           <LayoutList size={18} />
           <span>Add Section</span>
         </button>
@@ -444,6 +482,11 @@ export const Board = () => {
             onDeleteClick={handleDeleteClick}
             justMovedTaskId={justMovedTaskId}
             onTogglePause={handleTogglePause}
+            onEditColumn={(col) => {
+              setEditingColumn(col);
+              setIsSectionModalOpen(true);
+            }}
+            onDeleteColumn={(col) => setDeletingColumn(col)}
           />
         ))}
       </div>
@@ -481,8 +524,23 @@ export const Board = () => {
 
       <AddSectionModal
         isOpen={isSectionModalOpen}
-        onClose={() => setIsSectionModalOpen(false)}
-        onSubmit={handleCreateColumn}
+        onClose={() => {
+          setIsSectionModalOpen(false);
+          setEditingColumn(null);
+        }}
+        onSubmit={handleColumnSubmit}
+        initialTitle={editingColumn?.title}
+      />
+
+      <ConfirmModal
+        isOpen={deletingColumn != null}
+        onClose={() => setDeletingColumn(null)}
+        onConfirm={handleConfirmDeleteColumn}
+        title='Удалить колонку?'
+        message={`Вы уверены, что хотите удалить колонку '${deletingColumn?.title}'?`}
+        confirmText='Удалить'
+        cancelText='Отмена'
+        variant='danger'
       />
     </div>
   );

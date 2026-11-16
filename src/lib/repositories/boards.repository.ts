@@ -31,7 +31,7 @@ export const createBoard = async (title: string, description?: string): Promise<
   } = await supabase.auth.getUser();
 
   if (!user) throw new Error('Пользователь не авторизован');
-  console.log('Создаю доску. ID пользователя:', user.id);
+
   const { data, error } = await supabase
     .from('boards')
     .insert({
@@ -47,10 +47,13 @@ export const createBoard = async (title: string, description?: string): Promise<
 };
 
 // Обновление доски
-export const updateBoard = async (id: string, title: string): Promise<void> => {
+export const updateBoard = async (
+  id: string,
+  updates: { title?: string; description?: string | null }
+): Promise<void> => {
   const { error } = await supabase
     .from('boards')
-    .update({ title, updated_at: new Date().toISOString() })
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', id);
 
   if (error) throw new Error(error.message);
