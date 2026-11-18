@@ -9,7 +9,7 @@ import { LabelsPicker } from '../LabelsPicker/LabelsPicker';
 import { SubtasksEditor } from '../SubtasksEditor/SubtasksEditor';
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Название обязательно').max(100, 'Меньше 1000 символов'),
+  title: z.string().min(1, 'Название обязательно').max(100, 'Меньше 100 символов'),
   description: z.string().max(500, 'Максимально 500 знаков').optional(),
   deadline: z.string().min(1, 'Дедлайн обязательно'),
   paused: z.boolean(),
@@ -20,7 +20,7 @@ type TaskFormData = z.infer<typeof taskSchema>;
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Omit<Task, 'id' | 'createdAt'>) => void;
+  onSubmit: (data: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
   initialTask?: Task | null;
 }
 
@@ -29,7 +29,7 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -54,7 +54,7 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
     }
   }, [initialTask, isOpen, reset]);
 
-  const handleFormSubmit = (data: TaskFormData) => {
+  const handleFormSubmit = async (data: TaskFormData) => {
     const taskData: Omit<Task, 'id' | 'createdAt'> = {
       title: data.title,
       description: data.description,
@@ -65,7 +65,7 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
       paused: data.paused,
     };
 
-    onSubmit(taskData);
+    await onSubmit(taskData);
     reset();
     setLabels([]); // сброс
     setSubtasks([]);
@@ -140,8 +140,18 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, initialTask }: TaskModalP
           >
             Отмена
           </button>
-          <button className='task-modal__btn task-modal__btn--submit'>
-            {initialTask ? 'Сохранить' : 'Создать'}
+          <button
+            className='task-modal__btn task-modal__btn--submit'
+            type='submit'
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? initialTask
+                ? 'Сохранение...'
+                : 'Создание...'
+              : initialTask
+                ? 'Сохранить'
+                : 'Создать'}
           </button>
         </div>
       </form>

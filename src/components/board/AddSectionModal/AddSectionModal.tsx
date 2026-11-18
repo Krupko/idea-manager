@@ -14,7 +14,8 @@ type SectionFormData = z.infer<typeof sectionSchema>;
 interface AddSectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (title: string) => void;
+  onSubmit: (title: string) => Promise<void>;
+  mode?: 'create' | 'edit';
   initialTitle?: string; // Добавлен режим редактирования
 }
 
@@ -22,6 +23,7 @@ export const AddSectionModal = ({
   isOpen,
   onClose,
   onSubmit,
+  mode = 'create',
   initialTitle = '',
 }: AddSectionModalProps) => {
   const {
@@ -45,16 +47,20 @@ export const AddSectionModal = ({
     onClose();
   };
 
-  const handleFormSubmit = (data: SectionFormData) => {
-    onSubmit(data.title);
+  const handleFormSubmit = async (data: SectionFormData) => {
+    await onSubmit(data.title);
     reset();
     onClose();
   };
 
+  const title = mode === 'edit' ? 'Редактировать колонку' : 'Новая колонка';
+  const submitLabel = mode === 'edit' ? 'Сохранить' : 'Создать';
+  const submittingLabel = mode === 'edit' ? 'Сохранение...' : 'Создание...';
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
       <form className='add-section-modal' onSubmit={handleSubmit(handleFormSubmit)}>
-        <h2 className='add-section-modal__title'>Новая колонка</h2>
+        <h2 className='add-section-modal__title'>{title}</h2>
 
         <div className='add-section-modal__field'>
           <label htmlFor='title'>Название</label>
@@ -82,7 +88,7 @@ export const AddSectionModal = ({
             type='submit'
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Создание...' : 'Создать'}
+            {isSubmitting ? submittingLabel : submitLabel}
           </button>
         </div>
       </form>

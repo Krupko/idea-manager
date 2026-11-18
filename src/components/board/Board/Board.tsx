@@ -44,7 +44,6 @@ export const Board = () => {
   const loadBoard = async () => {
     if (!boardId) return;
     try {
-      setLoading(true);
       const dbColumns = await getColumnsBoard(boardId);
       const columnsWithTasks = await Promise.all(
         dbColumns.map(async (col) => {
@@ -83,17 +82,17 @@ export const Board = () => {
       setColumns(columnsWithTasks);
     } catch (err) {
       console.error('Ошибка загрузки доски:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   // ПЕРВОНАЧАЛЬНАЯ ЗАГРУЗКА
   useEffect(() => {
-    const initFetch = async () => {
+    const init = async () => {
+      setLoading(true);
       await loadBoard();
+      setLoading(false);
     };
-    void initFetch();
+    void init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardId]);
 
@@ -117,7 +116,9 @@ export const Board = () => {
         // Режим создания
         await createColumn(boardId, title, columns.length);
       }
+      setLoading(true);
       await loadBoard(); // Перезагрузка доски
+      setLoading(false);
     } catch (err) {
       console.error('Ошибка колонки', err);
     }
@@ -129,7 +130,9 @@ export const Board = () => {
     try {
       await deleteColumn(deletingColumn.id);
       setDeletingColumn(null);
+      setLoading(true);
       await loadBoard();
+      setLoading(false);
     } catch (err) {
       console.error('Ошибка удаления колонки', err);
     }
@@ -171,7 +174,7 @@ export const Board = () => {
         {
           title: taskData.title,
           description: taskData.description ?? null,
-          deadline: taskData.deadline || null,
+          deadline: taskData.deadline,
           done: taskData.done,
           paused: taskData.paused,
         },
@@ -487,6 +490,7 @@ export const Board = () => {
               setIsSectionModalOpen(true);
             }}
             onDeleteColumn={(col) => setDeletingColumn(col)}
+            isDraggingActive={draggedTaskId !== null}
           />
         ))}
       </div>
@@ -529,6 +533,7 @@ export const Board = () => {
           setEditingColumn(null);
         }}
         onSubmit={handleColumnSubmit}
+        mode={editingColumn ? 'edit' : 'create'}
         initialTitle={editingColumn?.title}
       />
 

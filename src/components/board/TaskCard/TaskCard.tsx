@@ -2,7 +2,7 @@ import './TaskCard.scss';
 import { Check, Clock, Pause, Pencil, Play, Trash2 } from 'lucide-react';
 import type { Task } from '../types';
 import { getDeadlineStatus, getDeadlineLabel } from '../../../utils/deadline';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { formatCreatedAt } from '@/utils/date';
 
 interface TaskCardProps {
@@ -30,9 +30,12 @@ export const TaskCard = ({
 }: TaskCardProps) => {
   const [isDragging, setDragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
-
-  const completedSubtasks = task.subtasks.filter((s) => s.completed).length;
-  const totalSubtasks = task.subtasks.length;
+  const posRef = useRef<'before' | 'after'>(null);
+  const dragCounter = useRef(0);
+  const labels = task.labels ?? [];
+  const subtasks = task.subtasks ?? [];
+  const completedSubtasks = subtasks.filter((s) => s.completed).length;
+  const totalSubtasks = subtasks.length;
   const deadlineStatus = task.deadline ? getDeadlineStatus(task.deadline) : null;
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
@@ -49,12 +52,18 @@ export const TaskCard = ({
     ghost.style.width = `${e.currentTarget.offsetWidth}px`;
     document.body.appendChild(ghost);
     e.dataTransfer.setDragImage(ghost, 0, 0);
-    setTimeout(() => document.body.removeChild(ghost), 0);
+    setTimeout(() => {
+      if (document.body.contains(ghost)) {
+        document.body.removeChild(ghost);
+      }
+    }, 0);
   };
 
   const handleDragEnd = () => {
     setDragging(false);
     setDropPosition(null);
+    posRef.current = null;
+    dragCounter.current = 0;
     onDragEnd();
   };
 
@@ -62,19 +71,34 @@ export const TaskCard = ({
     e.preventDefault();
     const rect = e.currentTarget.getBoundingClientRect();
     const middleY = rect.top + rect.height / 2;
-    setDropPosition(e.clientY < middleY ? 'before' : 'after');
+    const next = e.clientY < middleY ? 'before' : 'after';
+    if (posRef.current !== next) {
+      posRef.current = next;
+      setDropPosition(next);
+    }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+
     if (!dropPosition) return;
 
     onTaskDrop(task.id, dropPosition);
     setDropPosition(null);
+
+    posRef.current = null;
+    dragCounter.current = 0;
+  };
+
+  const handleDragEnter = () => {
+    dragCounter.current += 1;
   };
 
   const handleDragLeave = () => {
-    setDropPosition(null);
+    dragCounter.current -= 1;
+    if (dragCounter.current === 0) setDropPosition(null);
+    posRef.current = null;
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -98,6 +122,7 @@ export const TaskCard = ({
       draggable='true'
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}
@@ -137,7 +162,7 @@ export const TaskCard = ({
 
       {task.labels.length > 0 && (
         <div className='task-card__labels'>
-          {task.labels.map((label) => (
+          {labels.map((label) => (
             <span
               key={label.id}
               className='task-card__label'
@@ -166,23 +191,6 @@ export const TaskCard = ({
           </span>
         </div>
       )}
-
-      <div>
-        <div>
-          {task.done && (
-            <button className='task-card__deadline' type='button'>
-              <Check size={14} />
-              <span>Dete</span>
-            </button>
-          )}
-          {task.deadline && (
-            <button className='task-card__deadline' type='button'>
-              <Clock size={14} />
-              <span>Date</span>
-            </button>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

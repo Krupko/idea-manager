@@ -17,6 +17,7 @@ interface ColumnProps {
   onTogglePause: (taskId: string) => void;
   onEditColumn: (column: ColumnType) => void;
   onDeleteColumn: (column: ColumnType) => void;
+  isDraggingActive: boolean;
 }
 export const Column = ({
   column,
@@ -31,6 +32,7 @@ export const Column = ({
   onTogglePause,
   onEditColumn,
   onDeleteColumn,
+  isDraggingActive,
 }: ColumnProps) => {
   const [isOver, setIsOver] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -66,10 +68,11 @@ export const Column = ({
     onDrop(column.id);
   };
   const isEmpty = column.tasks.length === 0;
+  const isCurrentlyOver = isDraggingActive && isOver;
 
   return (
     <div
-      className={`column ${isOver ? 'column--over' : ''}`}
+      className={`column ${isCurrentlyOver ? 'column--over' : ''}`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -135,7 +138,9 @@ export const Column = ({
           />
         ))}
         {isEmpty && (
-          <div className={`column__placeholder ${isOver ? 'column__placeholder--over' : ''}`}>
+          <div
+            className={`column__placeholder ${isCurrentlyOver ? 'column__placeholder--over' : ''}`}
+          >
             Перетащить сюда
           </div>
         )}
