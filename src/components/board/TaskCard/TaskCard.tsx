@@ -30,7 +30,7 @@ export const TaskCard = ({
 }: TaskCardProps) => {
   const [isDragging, setDragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
-  const posRef = useRef<'before' | 'after'>(null);
+  const posRef = useRef<'before' | 'after' | null>(null);
   const dragCounter = useRef(0);
   const labels = task.labels ?? [];
   const subtasks = task.subtasks ?? [];
@@ -160,7 +160,7 @@ export const TaskCard = ({
         </div>
       </div>
 
-      {task.labels.length > 0 && (
+      {labels.length > 0 && (
         <div className='task-card__labels'>
           {labels.map((label) => (
             <span

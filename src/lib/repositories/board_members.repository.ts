@@ -55,6 +55,8 @@ export const findUserByEmail = async (
     .eq('email', email)
     .maybeSingle();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw error;
+  }
   return data;
 };

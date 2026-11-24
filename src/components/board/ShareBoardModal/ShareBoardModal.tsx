@@ -60,7 +60,12 @@ export const ShareBoardModal = ({ isOpen, onClose, boardId }: ShareBoardModalPro
       }, 1500);
     } catch (err) {
       console.error('Ошибка приглашения:', err);
-      if (err instanceof Error && err.message.includes('duplicate key')) {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'code' in err &&
+        (err as { code: string }).code === '23505'
+      ) {
         setMessage({
           type: 'error',
           text: 'Этот пользователь уже добавлен',
