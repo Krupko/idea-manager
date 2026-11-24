@@ -3,9 +3,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Column } from '../Column/Column.tsx';
 import type { Column as ColumnType, Task } from '../types.ts';
-import { getTasksByColumn } from '@/lib/repositories/tasks.repository.ts';
-import { getLabelByTask } from '@/lib/repositories/labels.repository.ts';
-import { getSubtaskByTask } from '@/lib/repositories/subtasks.repository.ts';
 import { TaskModal } from '../TaskModal/TaskModal.tsx';
 import { ConfirmModal } from '../ConfirmModal/ConfirmModal.tsx';
 import {
@@ -18,12 +15,8 @@ import { useBoardRealtime } from '@/hooks/useBoardRealtime.ts';
 import { ShareBoardModal } from '../ShareBoardModal/ShareBoardModal.tsx';
 import { LayoutList, UserPlus } from 'lucide-react';
 import { AddSectionModal } from '../AddSectionModal/AddSectionModal.tsx';
-import {
-  createColumn,
-  getColumnsBoard,
-  updateColumn,
-  deleteColumn,
-} from '@/lib/repositories/columns.repository.ts';
+import { createColumn, updateColumn, deleteColumn } from '@/lib/repositories/columns.repository.ts';
+import { getBoardWithRelations, toggleTaskPause } from '@/lib/repositories/tasks.repository.ts';
 
 export const Board = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -44,41 +37,27 @@ export const Board = () => {
   const loadBoard = async () => {
     if (!boardId) return;
     try {
-      const dbColumns = await getColumnsBoard(boardId);
-      const columnsWithTasks = await Promise.all(
-        dbColumns.map(async (col) => {
-          const dbTasks = await getTasksByColumn(col.id);
+      // запрос вместо ~206: RPC get_board_with_relations
+      // возвращает всю структуру доски (columns → tasks → labels/subtasks)
+      // одним JSON. Мапим в наш UI-тип ColumnType.
+      const dbColumns = await getBoardWithRelations(boardId);
 
-          const adaptedTasks: Task[] = await Promise.all(
-            dbTasks.map(async (t) => {
-              // закружаем метки и подзадачи\
-              const dbLabels = await getLabelByTask(t.id);
-              const dbSubtasks = await getSubtaskByTask(t.id);
+      const columnsWithTasks: ColumnType[] = dbColumns.map((col) => ({
+        id: col.id,
+        title: col.title,
+        tasks: col.tasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description ?? undefined,
+          deadline: t.deadline ?? undefined,
+          done: t.done,
+          paused: t.paused ?? false,
+          createdAt: t.created_at,
+          labels: t.labels.map((l) => ({ id: l.id, color: l.color })),
+          subtasks: t.subtasks.map((s) => ({ id: s.id, title: s.title, completed: s.completed })),
+        })),
+      }));
 
-              return {
-                id: t.id,
-                title: t.title,
-                description: t.description ?? undefined,
-                deadline: t.deadline ?? undefined,
-                done: t.done,
-                paused: t.paused ?? false,
-                createdAt: t.created_at,
-                labels: dbLabels.map((l) => ({
-                  id: l.id,
-                  color: l.color,
-                })),
-                subtasks: dbSubtasks.map((s) => ({
-                  id: s.id,
-                  title: s.title,
-                  completed: s.completed,
-                })),
-              };
-            })
-          );
-
-          return { id: col.id, title: col.title, tasks: adaptedTasks };
-        })
-      );
       setColumns(columnsWithTasks);
     } catch (err) {
       console.error('Ошибка загрузки доски:', err);
@@ -432,7 +411,7 @@ export const Board = () => {
 
     // отправляем в бд
     try {
-      await updateTask(taskId, { paused: newPaused }, undefined, undefined);
+      await toggleTaskPause(taskId, newPaused);
     } catch (err) {
       // откат
       console.error('Ошибка смены паузы:', err);

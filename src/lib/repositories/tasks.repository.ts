@@ -116,6 +116,14 @@ export const updateTask = async (
   if (error) throw error;
 };
 
+export const toggleTaskPause = async (taskId: string, paused: boolean): Promise<void> => {
+  const { error } = await supabase
+    .from('tasks')
+    .update({ paused, update_at: new Date().toISOString() })
+    .eq('id', taskId);
+  if (error) throw error;
+};
+
 // Удаление задачи
 export const deleteTask = async (id: string): Promise<void> => {
   const { error } = await supabase.from('tasks').delete().eq('id', id);
