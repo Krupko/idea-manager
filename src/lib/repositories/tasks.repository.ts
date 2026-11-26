@@ -6,6 +6,7 @@ import type { DbTask, CreateTaskDTO } from '@/types/db';
 // Структура повторяет DbTask, DbLabel, DbSubtask, но вложена в columns.
 export interface DbTaskWithRelations {
   id: string;
+  column_id: string;
   title: string;
   description: string | null;
   deadline: string | null;

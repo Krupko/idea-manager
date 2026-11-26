@@ -2,7 +2,7 @@ import './Column.scss';
 import { EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import type { Column as ColumnType, Task } from '../types.ts';
 import { TaskCard } from '../TaskCard/TaskCard.tsx';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 
 interface ColumnProps {
   column: ColumnType;
@@ -19,7 +19,7 @@ interface ColumnProps {
   onDeleteColumn: (column: ColumnType) => void;
   isDraggingActive: boolean;
 }
-export const Column = ({
+export const ColumnComponent = ({
   column,
   onDragStart,
   onDragEnd,
@@ -153,3 +153,5 @@ export const Column = ({
     </div>
   );
 };
+
+export const Column = memo(ColumnComponent);

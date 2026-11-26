@@ -1,10 +1,27 @@
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
+// Интерфейс для payload
+export type RealtimeTaskPayload =
+  | { eventType: 'DELETE'; old: { id: string } }
+  | {
+      eventType: 'UPDATE';
+      new: {
+        id: string;
+        column_id: string;
+        title: string;
+        description: string | null;
+        deadline: string | null;
+        done: boolean;
+        paused: boolean;
+      };
+    }
+  | { eventType: 'INSERT'; new: { id: string } };
+
 interface UseBoardRealtimeProps {
   boardId: string | undefined; // Id доски за которым следим
   onColumnsChange: () => void; // Callback - если изменилась колонка
-  onTasksChange: () => void; // Callback - если изменилась задача
+  onTasksChange: (payload: RealtimeTaskPayload) => void; // Callback - если изменилась задача
   onBoardChange: () => void; // Callback - если изменилась доска
 }
 
@@ -22,9 +39,7 @@ export const useBoardRealtime = ({
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'columns', filter: `board_id=eq.${boardId}` },
-        () => {
-          onColumnsChange(); // Вызов callback при любом изменении
-        }
+        () => onColumnsChange() // Вызов callback при любом изменении
       )
       // ПОДПИСКА НА ИЗМЕНЕНИЯ В ТАБЛИЦЕ TASKS
       .on(
@@ -34,9 +49,7 @@ export const useBoardRealtime = ({
           schema: 'public',
           table: 'tasks',
         },
-        () => {
-          onTasksChange();
-        }
+        (payload) => onTasksChange(payload as unknown as RealtimeTaskPayload)
       )
       // подписка на изменение досок
       .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, () =>

@@ -2,7 +2,7 @@ import './TaskCard.scss';
 import { Check, Clock, Pause, Pencil, Play, Trash2 } from 'lucide-react';
 import type { Task } from '../types';
 import { getDeadlineStatus, getDeadlineLabel } from '../../../utils/deadline';
-import { useRef, useState } from 'react';
+import { useRef, useState, memo } from 'react';
 import { formatCreatedAt } from '@/utils/date';
 
 interface TaskCardProps {
@@ -17,7 +17,7 @@ interface TaskCardProps {
   onTogglePause: (taskId: string) => void;
 }
 
-export const TaskCard = ({
+const TaskCardComponent = ({
   task,
   columnId,
   onDragStart,
@@ -194,3 +194,5 @@ export const TaskCard = ({
     </div>
   );
 };
+
+export const TaskCard = memo(TaskCardComponent);
