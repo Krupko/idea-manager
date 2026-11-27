@@ -1,0 +1,123 @@
+.members-list {
+  border-top: 1px solid #374151;
+  margin-top: 24px;
+  padding-top: 16px;
+
+  &__title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  &__loading,
+  &__error {
+    color: #9ca3af;
+    font-size: 14px;
+    padding: 12px 0;
+    text-align: center;
+  }
+
+  &__error {
+    color: #ef4444;
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__item {
+    align-items: center;
+    background: #1e1e1e;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    padding: 10px 12px;
+  }
+
+  &__info {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  &__email {
+    color: #e5e7eb;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__role {
+    border-radius: 4px;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    text-transform: uppercase;
+
+    &--owner {
+      background: rgb(245 158 11 / 15%);
+      color: #f59e0b;
+    }
+
+    &--editor {
+      background: rgb(59 130 246 / 15%);
+      color: #3b82f6;
+    }
+
+    &--viewer {
+      background: rgb(107 114 128 / 15%);
+      color: #9ca3af;
+    }
+  }
+
+  &__actions {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  &__select {
+    background: #2a2a2a;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    color: #e5e7eb;
+    cursor: pointer;
+    font-size: 13px;
+    outline: none;
+    padding: 6px 8px;
+
+    &:focus {
+      border-color: #3b82f6;
+    }
+  }
+
+  &__remove-btn {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    padding: 6px;
+    transition: all 0.15s;
+
+    &:hover {
+      background: rgb(239 68 68 / 15%);
+      color: #ef4444;
+    }
+  }
+}

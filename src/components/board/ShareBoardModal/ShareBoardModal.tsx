@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { findUserByEmail, addBoardMember } from '@/lib/repositories/board_members.repository';
 import './ShareBoardModal.scss';
+import { MembersList } from '../MembersList/MembersList';
 
 // Схема валидации zod
 const shareSchema = z.object({
@@ -133,6 +134,8 @@ export const ShareBoardModal = ({ isOpen, onClose, boardId }: ShareBoardModalPro
           </button>
         </div>
       </form>
+
+      <MembersList boardId={boardId} />
     </Modal>
   );
 };
